@@ -1,7 +1,6 @@
 {
   "name": "@nut-tree/template-matcher",
-  "version": "1.0.0",
-  "license": "Apache-2.0",
+  "version": "0.0.1",
   "main": "dist/index",
   "typings": "dist/index",
   "description": "Locate images on your screen using template matching in nut.js",
@@ -12,10 +11,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/nut-tree/nut.js.git"
+    "url": "https://github.com/nut-tree/TemplateMatcher.git"
   },
   "bugs": {
-    "url": "https://github.com/nut-tree/nut.js/issues"
+    "url": "https://github.com/nut-tree/TemplateMatcher/issues"
   },
   "os": [
     "linux",
