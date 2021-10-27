@@ -30,17 +30,9 @@
     "system",
     "automation",
     "testing",
-    "keyboard",
-    "mouse",
-    "process",
-    "memory",
-    "window",
     "screen",
     "monitor",
     "display",
-    "timer",
-    "clock",
-    "clipboard",
     "opencv"
   ],
   "scripts": {
