@@ -27,19 +27,12 @@ jobs:
         run: npm ci
       - name: Compile
         run: npm run compile
-      - name: Init window e2e test subpackage
-        run: npm --prefix e2e/window-test ci
-      - name: Generate coverage report
+      - name: Run tests
         uses: GabrielBB/xvfb-action@v1
         with:
           run: npm test
       - name: Run Docker E2E tests
-        if: ${{matrix.os == 'ubuntu-latest'}}
-        run: docker exec nut-ci bash -c "bash $PWD/.build/build.sh ${PWD} ${{matrix.node}}"
-      - name: Run Electron e2e test subpackage
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: npm --prefix e2e/electron-test cit
+        run: docker exec nut-ci bash -c "bash $PWD/.build/build.sh ${PWD} 14"
 
   deploy:
     needs:
@@ -55,22 +48,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: Install
         run: npm ci
-      - name: Run typedoc
-        run: npm run typedoc
-      - name: Publish typedocs to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3.7.3
-        with:
-          deploy_key: ${{ secrets.API_DOC_DEPLOY_KEY }}
-          external_repository: nut-tree/apidoc
-          publish_dir: ./docs
       - name: Publish tagged release to npm
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - uses: actions/setup-node@v2
-        with:
-          registry-url: 'https://npm.pkg.github.com'
-      - name: Publish tagged release to GPR
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
