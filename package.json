@@ -1,6 +1,6 @@
 {
   "name": "@nut-tree/template-matcher",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist/index",
   "typings": "dist/index",
   "description": "Locate images on your screen using template matching in nut.js",

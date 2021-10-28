@@ -1,6 +1,6 @@
 {
   "name": "plugin-tests",
-  "version": "1.7.0",
+  "version": "0.0.2",
   "description": "Tests to verify plugins",
   "main": "main.js",
   "author": {
