@@ -50,6 +50,8 @@ jobs:
       - name: Install
         run: npm ci
       - name: Publish tagged release to npm
-        run: npm publish
+        run: |
+          npm whoami
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

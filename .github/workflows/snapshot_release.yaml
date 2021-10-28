@@ -54,6 +54,8 @@ jobs:
       - name: Create snapshot release
         run: bash ./.build/pre-release.sh
       - name: Publish snapshot release to npm
-        run: npm run publish-next
+        run: |
+          npm whoami
+          npm run publish-next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
