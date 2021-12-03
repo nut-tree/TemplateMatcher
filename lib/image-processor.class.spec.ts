@@ -3,6 +3,8 @@ import {Region} from "@nut-tree/nut-js";
 import ImageReader from "./image-reader.class";
 import {fromImageWithAlphaChannel, fromImageWithoutAlphaChannel} from "./image-processor.class";
 
+jest.mock('jimp', () => {});
+
 describe("ImageProcessor", () => {
     it("should allow to create a cv.Mat from an Image with alpha channel, alpha channel is dropped", async () => {
         // GIVEN

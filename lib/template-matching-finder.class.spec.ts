@@ -3,6 +3,8 @@ import {MatchRequest, Region} from "@nut-tree/nut-js";
 import ImageReader from "./image-reader.class";
 import TemplateMatchingFinder from "./template-matching-finder.class";
 
+jest.mock('jimp', () => {});
+
 describe("Template-matching finder", () => {
     it("findMatch should return a match when present in image", async () => {
         // GIVEN

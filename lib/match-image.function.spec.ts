@@ -2,6 +2,8 @@ import * as cv from "opencv4nodejs-prebuilt";
 import {mockPartial} from "sneer";
 import {matchImages} from "./match-image.function";
 
+jest.mock('jimp', () => {});
+
 describe("matchImages", () => {
     it("should return minLoc position and needle size", async () => {
         // GIVEN

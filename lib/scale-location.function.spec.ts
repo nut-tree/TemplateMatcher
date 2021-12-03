@@ -1,6 +1,8 @@
 import {Region} from "@nut-tree/nut-js";
 import {scaleLocation} from "./scale-location.function";
 
+jest.mock('jimp', () => {});
+
 describe("scaleLocation", () => {
     it("should scale location of a Region for valid scale factors", () => {
         // GIVEN
