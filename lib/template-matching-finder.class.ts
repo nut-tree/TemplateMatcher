@@ -1,7 +1,5 @@
 import * as cv from "opencv4nodejs-prebuilt";
-import {Image, ImageFinderInterface, ImageReader, MatchRequest, MatchResult, Region} from "@nut-tree/nut-js";
-import {determineScaledSearchRegion} from "./determine-searchregion.function";
-import ImageReaderImpl from "./image-reader.class";
+import {Image, ImageFinderInterface, MatchRequest, MatchResult} from "@nut-tree/nut-js";
 import {matchImages} from "./match-image.function";
 import {scaleImage} from "./scale-image.function";
 import {scaleLocation} from "./scale-location.function";
@@ -15,77 +13,59 @@ async function loadNeedle(image: Image): Promise<cv.Mat> {
 }
 
 async function loadHaystack(matchRequest: MatchRequest): Promise<cv.Mat> {
-    const searchRegion = determineScaledSearchRegion(matchRequest);
     if (matchRequest.haystack.hasAlphaChannel) {
         return fromImageWithAlphaChannel(
-            matchRequest.haystack,
-            searchRegion,
+            matchRequest.haystack
         );
     } else {
         return fromImageWithoutAlphaChannel(
-            matchRequest.haystack,
-            searchRegion,
+            matchRequest.haystack
         );
     }
 }
 
-function isValidSearch(needle: cv.Mat, haystack: cv.Mat): boolean {
-    return (needle.cols <= haystack.cols) && (needle.rows <= haystack.rows);
-}
+function throwOnTooLargeNeedle(haystack: cv.Mat, needle: cv.Mat, smallestScaleFactor: number) {
+    const scaledRows = smallestScaleFactor * needle.rows;
+    const scaledCols = smallestScaleFactor * needle.cols;
 
-function createResultForInvalidSearch() {
-    return new MatchResult(0,
-        new Region(
-            0,
-            0,
-            0,
-            0
-        ),
-        new Error("The provided image sample is larger than the provided search region")
-    )
+    if (scaledRows > haystack.rows || scaledCols > haystack.cols) {
+        throw new Error("Search input is too large, try using a smaller template image.");
+    }
 }
 
 export default class TemplateMatchingFinder implements ImageFinderInterface {
-    private initialScale = [1.0];
     private scaleSteps = [0.9, 0.8, 0.7, 0.6, 0.5];
 
-    constructor(
-        private source: ImageReader = new ImageReaderImpl(),
-    ) {
+    constructor() {
     }
 
     public async findMatches(matchRequest: MatchRequest): Promise<MatchResult[]> {
-        let needle: cv.Mat;
-        try {
-            const needleInput = await this.source.load(matchRequest.pathToNeedle);
-            needle = await loadNeedle(needleInput);
-        } catch (e) {
-            throw new Error(
-                `Failed to load ${matchRequest.pathToNeedle}. Reason: '${e}'.`,
-            );
-        }
+        const needle = await loadNeedle(matchRequest.needle);
         if (!needle || needle.empty) {
             throw new Error(
-                `Failed to load ${matchRequest.pathToNeedle}, got empty image.`,
+                `Failed to load ${matchRequest.needle.id}, got empty image.`,
             );
         }
         const haystack = await loadHaystack(matchRequest);
-
-        const matchResults = this.initialScale.map(
-            async () => {
-                if (!isValidSearch(needle, haystack)) {
-                    return createResultForInvalidSearch();
-                }
-                const matchResult = await matchImages(haystack, needle);
-                return new MatchResult(matchResult.confidence, matchResult.location);
-            }
-        );
-
-        if (matchRequest.searchMultipleScales) {
-            matchResults.push(...this.searchMultipleScales(needle, haystack))
+        if (!haystack || haystack.empty) {
+            throw new Error(
+                `Failed to load ${matchRequest.haystack.id}, got empty image.`,
+            );
         }
 
-        return Promise.all(matchResults).then(results => {
+        throwOnTooLargeNeedle(haystack, needle, this.scaleSteps[this.scaleSteps.length - 1]);
+
+        const matchResult = await matchImages(haystack, needle);
+        const matchResults = [
+            new MatchResult(matchResult.confidence, matchResult.location)
+        ];
+
+        if (matchRequest.searchMultipleScales) {
+            const scaledResults = await this.searchMultipleScales(needle, haystack);
+            matchResults.push(...scaledResults)
+        }
+
+        const matches = await Promise.all(matchResults).then(results => {
             results.forEach(matchResult => {
                 matchResult.location.left /= matchRequest.haystack.pixelDensity.scaleX;
                 matchResult.location.width /= matchRequest.haystack.pixelDensity.scaleX;
@@ -96,59 +76,66 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
                 (first, second) => second.confidence - first.confidence,
             );
         });
-    }
-
-    public async findMatch(matchRequest: MatchRequest): Promise<MatchResult> {
-
-        const matches = await this.findMatches(matchRequest);
         const potentialMatches = matches
             .filter(match => match.confidence >= matchRequest.confidence);
         if (potentialMatches.length === 0) {
             matches.sort((a, b) => a.confidence - b.confidence);
             const bestMatch = matches.pop();
             if (bestMatch) {
-                if (bestMatch.error) {
-                    throw bestMatch.error
-                } else {
-                    throw new Error(`No match with required confidence ${matchRequest.confidence}. Best match: ${bestMatch.confidence} at ${bestMatch.location}`)
-                }
+                throw new Error(`No match with required confidence ${matchRequest.confidence}. Best match: ${bestMatch.confidence}`)
             } else {
-                throw new Error(`Unable to locate ${matchRequest.pathToNeedle}, no match!`);
+                throw new Error(`Unable to locate ${matchRequest.needle.id}, no match!`);
             }
         }
-        return potentialMatches[0];
+        return potentialMatches;
     }
 
-    private searchMultipleScales(needle: cv.Mat, haystack: cv.Mat) {
-        const scaledNeedleResult = this.scaleSteps.map(
-            async (currentScale) => {
-                const scaledNeedle = await scaleImage(needle, currentScale);
-                if (!isValidSearch(scaledNeedle, haystack)) {
-                    return createResultForInvalidSearch();
-                }
-                const matchResult = await matchImages(haystack, scaledNeedle);
-                return new MatchResult(
-                    matchResult.confidence,
-                    matchResult.location,
-                );
+    public async findMatch(matchRequest: MatchRequest): Promise<MatchResult> {
+        const matches = await this.findMatches(matchRequest);
+        return matches[0];
+    }
+
+    private async searchMultipleScales(needle: cv.Mat, haystack: cv.Mat) {
+        const results: MatchResult[] = [];
+
+        for (const currentScale of this.scaleSteps) {
+            const scaledHaystack = await scaleImage(haystack, currentScale);
+            const scaledNeedle = await scaleImage(needle, currentScale);
+            if (scaledHaystack.cols <= 10 || scaledHaystack.rows <= 10) {
+                break;
             }
-        );
-        const scaledHaystackResult = this.scaleSteps.map(
-            async (currentScale) => {
-                const scaledHaystack = await scaleImage(haystack, currentScale);
-                if (!isValidSearch(needle, scaledHaystack)) {
-                    return createResultForInvalidSearch();
-                }
-                const matchResult = await matchImages(scaledHaystack, needle);
-                return new MatchResult(
-                    matchResult.confidence,
-                    scaleLocation(
-                        matchResult.location,
-                        currentScale
-                    )
-                );
+            if (scaledHaystack.cols * scaledHaystack.rows === 0) {
+                break;
             }
-        );
-        return [...scaledHaystackResult, ...scaledNeedleResult];
+            if (scaledHaystack.cols < needle.cols ||
+                scaledHaystack.rows < needle.rows) {
+                break;
+            }
+            if (scaledNeedle.cols <= 10 || scaledNeedle.rows <= 10) {
+                break;
+            }
+            if (scaledNeedle.cols * scaledNeedle.rows === 0) {
+                break;
+            }
+            if (haystack.cols < scaledNeedle.cols ||
+                haystack.rows < scaledNeedle.rows) {
+                break;
+            }
+
+            const matchNeedleResult = await matchImages(haystack, scaledNeedle);
+            results.push(new MatchResult(
+                matchNeedleResult.confidence,
+                matchNeedleResult.location,
+            ));
+            const matchHaystackResult = await matchImages(scaledHaystack, needle);
+            results.push(new MatchResult(
+                matchHaystackResult.confidence,
+                scaleLocation(
+                    matchHaystackResult.location,
+                    currentScale
+                )
+            ));
+        }
+        return results;
     }
 }
