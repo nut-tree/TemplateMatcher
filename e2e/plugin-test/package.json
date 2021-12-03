@@ -11,6 +11,6 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@nut-tree/nut-js": "next",
-    "@nut-tree/template-matcher": "file:../../"
+    "@nut-tree/template-matcher": "file:../../nut-tree-template-matcher-0.0.2.tgz"
   }
 }
