@@ -36,9 +36,7 @@ jobs:
           run: npm test
       - name: Run Docker E2E tests
         if: ${{matrix.os == 'ubuntu-latest'}}
-        run: |
-          npm run pretest
-          docker exec nut-ci bash -c "bash $PWD/.build/build.sh ${PWD} ${{matrix.node}}"
+        run: docker exec nut-ci bash -c "bash $PWD/.build/build.sh ${PWD} ${{matrix.node}}"
 
   deploy:
     needs:
