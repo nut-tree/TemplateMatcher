@@ -22,7 +22,8 @@ cd $targetDir
 echo "Installing node version $nodeVersion"
 nvm install $nodeVersion
 
-npm cit
+npm ci
+npm run pretest
 pushd e2e/plugin-test
 npm ci
 node install.js
