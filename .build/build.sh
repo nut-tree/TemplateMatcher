@@ -26,5 +26,5 @@ npm ci
 npm run pretest
 pushd e2e/plugin-test
 npm ci
-popd
 E2E_TEST=1 npm test
+popd
