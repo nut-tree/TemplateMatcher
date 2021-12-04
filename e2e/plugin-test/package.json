@@ -8,9 +8,6 @@
     "email": "kontakt@s1h.org",
     "url": "https://s1h.org"
   },
-  "scripts": {
-    "pretest": "node install.js"
-  },
   "license": "Apache-2.0",
   "devDependencies": {
     "@nut-tree/nut-js": "next"
