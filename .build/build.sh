@@ -23,5 +23,9 @@ echo "Installing node version $nodeVersion"
 nvm install $nodeVersion
 
 npm ci
-npm --prefix e2e/plugin-test ci
+npm run pretest
+pushd e2e/plugin-test
+npm ci
+node install.js
+popd
 E2E_TEST=1 npm test

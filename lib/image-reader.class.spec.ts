@@ -1,6 +1,8 @@
 import * as path from "path";
 import ImageReader from "./image-reader.class";
 
+jest.mock('jimp', () => {});
+
 describe("Image loader", () => {
     it("should resolve to a non-empty Mat on successful load", async () => {
         // GIVEN

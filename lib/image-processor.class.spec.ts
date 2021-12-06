@@ -3,6 +3,8 @@ import {Region} from "@nut-tree/nut-js";
 import ImageReader from "./image-reader.class";
 import {fromImageWithAlphaChannel, fromImageWithoutAlphaChannel} from "./image-processor.class";
 
+jest.mock('jimp', () => {});
+
 describe("ImageProcessor", () => {
     it("should allow to create a cv.Mat from an Image with alpha channel, alpha channel is dropped", async () => {
         // GIVEN
@@ -24,7 +26,7 @@ describe("ImageProcessor", () => {
     it("should allow to create a cv.Mat from an Image without alpha channel", async () => {
         // GIVEN
         const imageReader = new ImageReader();
-        const imagePath = resolve(__dirname, "./__mocks__/mouse.png");
+        const imagePath = resolve(__dirname, "./__mocks__/fat-needle.png");
         const image = await imageReader.load(imagePath);
 
         // WHEN
@@ -43,7 +45,7 @@ describe("ImageProcessor with ROI", () => {
     it("negative left or top values are updated to 0", async () => {
         // GIVEN
         const imageReader = new ImageReader();
-        const imagePath = resolve(__dirname, "./__mocks__/mouse.png");
+        const imagePath = resolve(__dirname, "./__mocks__/fat-needle.png");
         const image = await imageReader.load(imagePath);
 
         // WHEN
@@ -63,7 +65,7 @@ describe("ImageProcessor with ROI", () => {
     it("values bigger than the input are updated to width and height", async () => {
         // GIVEN
         const imageReader = new ImageReader();
-        const imagePath = resolve(__dirname, "./__mocks__/mouse.png");
+        const imagePath = resolve(__dirname, "./__mocks__/fat-needle.png");
         const image = await imageReader.load(imagePath);
 
         // WHEN
