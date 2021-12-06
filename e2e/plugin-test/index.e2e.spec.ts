@@ -70,6 +70,7 @@ describe("E2E tests", () => {
 
     it("drag & drop", async () => {
         screen.config.resourceDirectory = "./e2e/assets";
+        screen.config.confidence = 0.94;
 
         const expected = new Region(34, 574, 75, 107);
         const maxDiff = 1;
