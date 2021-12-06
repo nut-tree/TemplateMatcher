@@ -3,25 +3,14 @@ import {Image, ImageFinderInterface, MatchRequest, MatchResult} from "@nut-tree/
 import {matchImages} from "./match-image.function";
 import {scaleImage} from "./scale-image.function";
 import {scaleLocation} from "./scale-location.function";
-import {fromImageWithAlphaChannel, fromImageWithoutAlphaChannel} from "./image-processor.class";
+import {fromImageWithAlphaChannel} from "./image-processor.class";
 
 async function loadNeedle(image: Image): Promise<cv.Mat> {
-    if (image.hasAlphaChannel) {
-        return fromImageWithAlphaChannel(image);
-    }
-    return fromImageWithoutAlphaChannel(image);
+    return fromImageWithAlphaChannel(image);
 }
 
 async function loadHaystack(matchRequest: MatchRequest): Promise<cv.Mat> {
-    if (matchRequest.haystack.hasAlphaChannel) {
-        return fromImageWithAlphaChannel(
-            matchRequest.haystack
-        );
-    } else {
-        return fromImageWithoutAlphaChannel(
-            matchRequest.haystack
-        );
-    }
+    return fromImageWithAlphaChannel(matchRequest.haystack);
 }
 
 function throwOnTooLargeNeedle(haystack: cv.Mat, needle: cv.Mat, smallestScaleFactor: number) {
@@ -52,6 +41,8 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
                 `Failed to load ${matchRequest.haystack.id}, got empty image.`,
             );
         }
+        cv.imwrite("./haystack.png", haystack);
+        cv.imwrite("./needle.png", needle);
 
         throwOnTooLargeNeedle(haystack, needle, this.scaleSteps[this.scaleSteps.length - 1]);
 
