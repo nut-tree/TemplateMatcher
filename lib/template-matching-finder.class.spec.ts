@@ -16,7 +16,7 @@ describe("Template-matching finder", () => {
         const needle = await imageLoader.load(needlePath);
         const minConfidence = 0.99;
         const matchRequest = new MatchRequest(haystack, needle, minConfidence);
-        const expectedResult = new Region(16, 31, needle.width, needle.height);
+        const expectedResult = new Region(0, 0, needle.width, needle.height);
 
         // WHEN
         const result = await SUT.findMatch(matchRequest);
