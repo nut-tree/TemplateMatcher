@@ -47,18 +47,8 @@ const close = async () => {
 
 describe("E2E tests", () => {
     afterEach(async () => {
-        // await keyboard.type(Key.LeftControl, Key.LeftAlt, Key.Left);
+        await keyboard.type(Key.LeftControl, Key.LeftAlt, Key.Left);
     });
-
-    it("should press play", async () => {
-        // GIVEN
-        screen.config.resourceDirectory = "./e2e/assets";
-
-        // WHEN
-        await screen.highlight(screen.find(imageResource("play.png")));
-
-        // THEN
-    })
 
     it("should throw on invalid images", async () => {
         await expect(screen.find(imageResource("mouse.png"))).rejects.toContain("Failed to load image");
@@ -80,6 +70,7 @@ describe("E2E tests", () => {
 
     it("drag & drop", async () => {
         screen.config.resourceDirectory = "./e2e/assets";
+        screen.config.confidence = 0.95;
 
         const expected = new Region(38, 585, 70, 86);
         const maxDiff = 1;
