@@ -1,5 +1,5 @@
 import * as cv from "opencv4nodejs-prebuilt";
-import {Image, Region} from "@nut-tree/nut-js";
+import {ColorMode, Image, Region} from "@nut-tree/nut-js";
 
 function determineROI(img: Image, roi: Region): cv.Rect {
     return new cv.Rect(
@@ -22,7 +22,12 @@ export const fromImageWithAlphaChannel = async (
     img: Image,
     roi?: Region,
 ): Promise<cv.Mat> => {
-    const mat = await new cv.Mat(img.data, img.height, img.width, cv.CV_8UC4).cvtColorAsync(cv.COLOR_BGRA2BGR);
+    let mat: cv.Mat;
+    if (img.colorMode === ColorMode.RGB) {
+        mat = await new cv.Mat(img.data, img.height, img.width, cv.CV_8UC4).cvtColorAsync(cv.COLOR_RGBA2BGR);
+    } else {
+        mat = await new cv.Mat(img.data, img.height, img.width, cv.CV_8UC4).cvtColorAsync(cv.COLOR_BGRA2BGR);
+    }
     if (roi) {
         return mat.getRegion(determineROI(img, roi));
     } else {
@@ -43,7 +48,12 @@ export const fromImageWithoutAlphaChannel = async (
     img: Image,
     roi?: Region,
 ): Promise<cv.Mat> => {
-    const mat = new cv.Mat(img.data, img.height, img.width, cv.CV_8UC3);
+    let mat: cv.Mat;
+    if (img.colorMode === ColorMode.RGB) {
+        mat = await new cv.Mat(img.data, img.height, img.width, cv.CV_8UC3).cvtColorAsync(cv.COLOR_RGB2BGR);
+    } else {
+        mat = new cv.Mat(img.data, img.height, img.width, cv.CV_8UC3);
+    }
     if (roi) {
         return mat.getRegion(determineROI(img, roi));
     } else {
