@@ -41,8 +41,6 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
                 `Failed to load ${matchRequest.haystack.id}, got empty image.`,
             );
         }
-        cv.imwrite("./haystack.png", haystack);
-        cv.imwrite("./needle.png", needle);
 
         throwOnTooLargeNeedle(haystack, needle, this.scaleSteps[this.scaleSteps.length - 1]);
 
