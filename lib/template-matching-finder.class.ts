@@ -111,12 +111,25 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
   }
 
   public async findMatch(matchRequest: MatchRequest | CustomMatchRequest): Promise<MatchResult> {
-    let { haystack, needle, confidence } = await this.initData(matchRequest);
+    let { haystack, needle, confidence, scaleSteps } = await this.initData(matchRequest);
 
-    const matches = await MatchTemplate.matchImages(haystack, needle, (matchRequest as CustomMatchRequest).customOptions?.methodType, (matchRequest as CustomMatchRequest).customOptions?.debug);
-    const result = await this.getValidatedMatches([matches.data], matchRequest, confidence);
+    if (!matchRequest.searchMultipleScales) {
+      const matches = await MatchTemplate.matchImages(haystack, needle, (matchRequest as CustomMatchRequest).customOptions?.methodType, (matchRequest as CustomMatchRequest).customOptions?.debug);
+      const result = await this.getValidatedMatches([matches.data], matchRequest, confidence);
 
-    return result[0];
+      return result[0];
+    } else {
+      const scaledResults = await this.searchMultipleScales(
+        haystack,
+        needle,
+        confidence,
+        scaleSteps,
+        (matchRequest as CustomMatchRequest).customOptions?.methodType,
+        (matchRequest as CustomMatchRequest).customOptions?.debug,
+        true,
+      );
+      return (await this.getValidatedMatches([scaledResults[0]], matchRequest, confidence))[0];
+    }
   }
 
   private async searchMultipleScales(
@@ -126,14 +139,22 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     scaleSteps: Array<number> = this.scaleSteps,
     methodType: MethodNameType = MethodEnum.TM_CCOEFF_NORMED,
     debug: boolean = false,
+    firstMach: boolean = false,
   ) {
     const results: MatchResult[] = [];
-    const needleData = await this.scaleNeedle(haystack, needle, confidence, scaleSteps, methodType, debug);
+
+    const needleData = await this.scaleNeedle(haystack, needle, confidence, scaleSteps, methodType, debug, firstMach);
     results.push(...needleData.results);
 
-    const haystackData = await this.scaleHaystack(needleData.haystack, needle, confidence, scaleSteps, methodType, debug);
+    if (firstMach && results.length) {
+      return results;
+    }
+    const haystackData = await this.scaleHaystack(needleData.haystack, needle, confidence, scaleSteps, methodType, debug, firstMach);
     results.push(...haystackData.results);
 
+    if (firstMach && results.length) {
+      return results;
+    }
     return results;
   }
 
@@ -144,6 +165,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     scaleSteps: Array<number> = this.scaleSteps,
     methodType: MethodNameType = MethodEnum.TM_CCOEFF_NORMED,
     debug: boolean = false,
+    firstMach: boolean = false,
   ) {
     const results: MatchResult[] = [];
     let overWrittenScaledHaystackResult = { results: results, haystack: haystack };
@@ -161,7 +183,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
       if (scaledHaystack.cols < needle.cols || scaledHaystack.rows < needle.rows) {
         break;
       }
-      overWrittenScaledHaystackResult = await MatchTemplate.matchImagesByWriteOverFounded(scaledHaystack, needle, confidence, methodType, debug);
+      overWrittenScaledHaystackResult = await MatchTemplate.matchImagesByWriteOverFounded(scaledHaystack, needle, confidence, methodType, debug, firstMach);
       overwrittenHaystack = overWrittenScaledHaystackResult.haystack;
       results.push(...overWrittenScaledHaystackResult.results);
     }
@@ -175,6 +197,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     scaleSteps: Array<number> = this.scaleSteps,
     methodType: MethodNameType = MethodEnum.TM_CCOEFF_NORMED,
     debug: boolean = false,
+    firstMatch: boolean = false,
   ): Promise<MatchedResults> {
     const results: MatchResult[] = [];
     let overWrittenScaledNeedleResult = { results: results, haystack: haystack };
@@ -192,7 +215,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
         break;
       }
 
-      overWrittenScaledNeedleResult = await MatchTemplate.matchImagesByWriteOverFounded(haystack, scaledNeedle, confidence, methodType, debug);
+      overWrittenScaledNeedleResult = await MatchTemplate.matchImagesByWriteOverFounded(haystack, scaledNeedle, confidence, methodType, debug, firstMatch);
       results.push(...overWrittenScaledNeedleResult.results);
     }
     return { results: results, haystack: overWrittenScaledNeedleResult.haystack };

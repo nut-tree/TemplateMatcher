@@ -54,6 +54,7 @@ export class MatchTemplate {
     confidence: number = 0.99,
     matchedMethod: MethodNameType = MethodEnum.TM_CCOEFF_NORMED,
     debug: boolean = false,
+    firstMach: boolean = false,
   ): Promise<MatchedResults> {
     const h = needle.rows;
     const w = needle.cols;
@@ -96,6 +97,11 @@ export class MatchTemplate {
             new Region((minMax[locType as keyof typeof minMax] as Point2).x, (minMax[locType as keyof typeof minMax] as Point2).y, needle.cols, needle.rows),
           ),
         );
+
+        if (firstMach && matchedResults.length && matchedResults[0].confidence >= confidence) {
+          return { results: matchedResults, haystack: haystack };
+        }
+
         if (debug) {
           cv.imshow('debug iteration', haystack);
           cv.waitKey(0);
