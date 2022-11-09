@@ -10,19 +10,17 @@
 
 ### It's plugin for [nutjs project](https://www.npmjs.com/package/@nut-tree/nut-js)  with some features like
 
-#### installation
+- incresed accuracy (x10)
+- incresed perfomance (~x2)
+- added some customOptions for arguments `params?: OptionalSearchParameters` in [nutjs](https://github.com/nut-tree/nut.js/blob/develop/lib/optionalsearchparameters.class.ts)
+
+#### Installation
 
 `npm i @udarrr/template-matcher`
 
 and then just use it in your project once
 
 `import "@udarrr/template-matcher"` or `require("@udarrr/template-matcher")`
-
-#### Benefits
-
-- incresed accuracy (x10)
-- incresed perfomance (~x2)
-- added some customOptions for arguments `params?: OptionalSearchParameters` in [nutjs](https://github.com/nut-tree/nut.js/blob/develop/lib/optionalsearchparameters.class.ts)
 
 #### Options
 

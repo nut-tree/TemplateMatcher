@@ -1,6 +1,6 @@
 {
   "name": "@udarrr/template-matcher",
-  "version": "1.0.2",
+  "version": "1.0.6",
   "main": "dist/index",
   "typings": "dist/index",
   "description": "Locate images on your screen using template matching in nut.js",
@@ -40,7 +40,7 @@
     "compile": "npm run clean && tsc -p .",
     "pretest": "npm pack",
     "test": "jest --runInBand",
-    "publish-next": "npm publish --tag next --access=public",
+    "publish-next": "npm publish --tag latest --access=public",
     "prepublishOnly": "npm run compile",
     "typedoc": "typedoc --options ./typedoc.js --out ./docs lib/"
   },
