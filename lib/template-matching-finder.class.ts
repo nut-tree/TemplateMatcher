@@ -4,7 +4,7 @@ import { MatchedResults, MatchTemplate, MethodEnum, MethodNameType } from './mat
 import { scaleImage } from './scale-image.function';
 import { fromImageWithAlphaChannel } from './image-processor.class';
 
-type CustomMatchRequest = MatchRequest & { customOptions?: { methodType: MethodNameType; scaleSteps: Array<number>; searchWriteOverFounded: boolean; debug: boolean } };
+type CustomMatchRequest = MatchRequest & { customOptions?: { methodType: MethodNameType; scaleSteps: Array<number>; debug: boolean } };
 
 async function loadNeedle(image: Image): Promise<cv.Mat> {
   return fromImageWithAlphaChannel(image);
@@ -62,7 +62,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     let matchResults: Array<MatchResult> = [];
     let { haystack, needle, confidence, scaleSteps } = await this.initData(matchRequest);
 
-    if (!matchRequest.searchMultipleScales && !(matchRequest as CustomMatchRequest).customOptions?.searchWriteOverFounded) {
+    if (!matchRequest.searchMultipleScales) {
       const overwrittenResults = await MatchTemplate.matchImagesByWriteOverFounded(
         haystack,
         needle,
@@ -72,27 +72,15 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
       );
       matchResults.push(...overwrittenResults.results);
     } else {
-      if (matchRequest.searchMultipleScales) {
-        const scaledResults = await this.searchMultipleScales(
-          haystack,
-          needle,
-          confidence,
-          scaleSteps,
-          (matchRequest as CustomMatchRequest).customOptions?.methodType,
-          (matchRequest as CustomMatchRequest).customOptions?.debug,
-        );
-        matchResults.push(...scaledResults);
-      }
-      if ((matchRequest as CustomMatchRequest).customOptions?.searchWriteOverFounded) {
-        const restResult = await MatchTemplate.matchImagesByWriteOverFounded(
-          haystack,
-          needle,
-          confidence,
-          (matchRequest as CustomMatchRequest).customOptions?.methodType,
-          (matchRequest as CustomMatchRequest).customOptions?.debug,
-        );
-        matchResults.push(...restResult.results);
-      }
+      const scaledResults = await this.searchMultipleScales(
+        haystack,
+        needle,
+        confidence,
+        scaleSteps,
+        (matchRequest as CustomMatchRequest).customOptions?.methodType,
+        (matchRequest as CustomMatchRequest).customOptions?.debug,
+      );
+      matchResults.push(...scaledResults);
     }
     return await this.getValidatedMatches(matchResults, matchRequest, confidence);
   }
