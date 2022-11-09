@@ -24,23 +24,22 @@ function throwOnTooLargeNeedle(haystack: cv.Mat, needle: cv.Mat, smallestScaleFa
 }
 
 export default class TemplateMatchingFinder implements ImageFinderInterface {
-  private scaleSteps = [1, 0.9, 0.8, 0.7, 0.6, 0.5];
-
   constructor() {}
 
   private async initData(matchRequest: MatchRequest | CustomMatchRequest) {
-    let confidence =
-      (((matchRequest as CustomMatchRequest).customOptions && (matchRequest as CustomMatchRequest).customOptions?.methodType === MethodEnum.TM_SQDIFF_NORMED) ||
-        ((matchRequest as CustomMatchRequest).customOptions && (matchRequest as CustomMatchRequest).customOptions?.methodType === MethodEnum.TM_SQDIFF)) &&
-      matchRequest.confidence === 0.99
+    const customMatchRequest = matchRequest as CustomMatchRequest;
+    const confidence =
+      customMatchRequest.customOptions && customMatchRequest.customOptions?.methodType === MethodEnum.TM_SQDIFF && matchRequest.confidence === 0.99
         ? 0.998
-        : ((matchRequest as CustomMatchRequest).customOptions && (matchRequest as CustomMatchRequest).customOptions?.methodType === MethodEnum.TM_CCOEFF_NORMED) ||
-          ((matchRequest as CustomMatchRequest).customOptions && (matchRequest as CustomMatchRequest).customOptions?.methodType === MethodEnum.TM_CCORR_NORMED && matchRequest.confidence === 0.99)
+        : (customMatchRequest.customOptions && customMatchRequest.customOptions?.methodType === MethodEnum.TM_CCOEFF_NORMED) ||
+          (customMatchRequest.customOptions && customMatchRequest.customOptions?.methodType === MethodEnum.TM_CCORR_NORMED && matchRequest.confidence === 0.99)
         ? 0.8
         : matchRequest.confidence === 0.99
         ? 0.8
         : matchRequest.confidence;
-    let scaleSteps = (matchRequest as CustomMatchRequest).customOptions?.scaleSteps || this.scaleSteps;
+    const scaleSteps = customMatchRequest.customOptions?.scaleSteps || [1, 0.9, 0.8, 0.7, 0.6, 0.5];
+    const methodType = customMatchRequest.customOptions?.methodType || MethodEnum.TM_CCOEFF_NORMED;
+    const debug = customMatchRequest.customOptions?.debug || false;
 
     const needle = await loadNeedle(matchRequest.needle);
     if (!needle || needle.empty) {
@@ -55,31 +54,18 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
       throwOnTooLargeNeedle(haystack, needle, scaleSteps[scaleSteps.length - 1]);
     }
 
-    return { haystack: haystack, needle: needle, confidence: confidence, scaleSteps: scaleSteps };
+    return { haystack: haystack, needle: needle, confidence: confidence, scaleSteps: scaleSteps, methodType: methodType, debug: debug };
   }
 
   public async findMatches(matchRequest: MatchRequest | CustomMatchRequest): Promise<MatchResult[]> {
     let matchResults: Array<MatchResult> = [];
-    let { haystack, needle, confidence, scaleSteps } = await this.initData(matchRequest);
+    let { haystack, needle, confidence, scaleSteps, methodType, debug } = await this.initData(matchRequest);
 
     if (!matchRequest.searchMultipleScales) {
-      const overwrittenResults = await MatchTemplate.matchImagesByWriteOverFounded(
-        haystack,
-        needle,
-        confidence,
-        (matchRequest as CustomMatchRequest).customOptions?.methodType,
-        (matchRequest as CustomMatchRequest).customOptions?.debug,
-      );
+      const overwrittenResults = await MatchTemplate.matchImagesByWriteOverFounded(haystack, needle, confidence, methodType, debug);
       matchResults.push(...overwrittenResults.results);
     } else {
-      const scaledResults = await this.searchMultipleScales(
-        haystack,
-        needle,
-        confidence,
-        scaleSteps,
-        (matchRequest as CustomMatchRequest).customOptions?.methodType,
-        (matchRequest as CustomMatchRequest).customOptions?.debug,
-      );
+      const scaledResults = await this.searchMultipleScales(haystack, needle, confidence, scaleSteps, methodType, debug);
       matchResults.push(...scaledResults);
     }
     return await this.getValidatedMatches(matchResults, matchRequest, confidence);
@@ -111,36 +97,20 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
   }
 
   public async findMatch(matchRequest: MatchRequest | CustomMatchRequest): Promise<MatchResult> {
-    let { haystack, needle, confidence, scaleSteps } = await this.initData(matchRequest);
+    let { haystack, needle, confidence, scaleSteps, methodType, debug } = await this.initData(matchRequest);
 
     if (!matchRequest.searchMultipleScales) {
-      const matches = await MatchTemplate.matchImages(haystack, needle, (matchRequest as CustomMatchRequest).customOptions?.methodType, (matchRequest as CustomMatchRequest).customOptions?.debug);
+      const matches = await MatchTemplate.matchImages(haystack, needle, methodType, (matchRequest as CustomMatchRequest).customOptions?.debug);
       const result = await this.getValidatedMatches([matches.data], matchRequest, confidence);
 
       return result[0];
     } else {
-      const scaledResults = await this.searchMultipleScales(
-        haystack,
-        needle,
-        confidence,
-        scaleSteps,
-        (matchRequest as CustomMatchRequest).customOptions?.methodType,
-        (matchRequest as CustomMatchRequest).customOptions?.debug,
-        true,
-      );
+      const scaledResults = await this.searchMultipleScales(haystack, needle, confidence, scaleSteps, methodType, debug, true);
       return (await this.getValidatedMatches([scaledResults[0]], matchRequest, confidence))[0];
     }
   }
 
-  private async searchMultipleScales(
-    haystack: cv.Mat,
-    needle: cv.Mat,
-    confidence: number = 0.8,
-    scaleSteps: Array<number> = this.scaleSteps,
-    methodType: MethodNameType = MethodEnum.TM_CCOEFF_NORMED,
-    debug: boolean = false,
-    firstMach: boolean = false,
-  ) {
+  private async searchMultipleScales(haystack: cv.Mat, needle: cv.Mat, confidence: number, scaleSteps: Array<number>, methodType: MethodNameType, debug: boolean, firstMach: boolean = false) {
     const results: MatchResult[] = [];
 
     const needleData = await this.scaleNeedle(haystack, needle, confidence, scaleSteps, methodType, debug, firstMach);
@@ -158,15 +128,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     return results;
   }
 
-  private async scaleHaystack(
-    haystack: cv.Mat,
-    needle: cv.Mat,
-    confidence: number = 0.8,
-    scaleSteps: Array<number> = this.scaleSteps,
-    methodType: MethodNameType = MethodEnum.TM_CCOEFF_NORMED,
-    debug: boolean = false,
-    firstMach: boolean = false,
-  ) {
+  private async scaleHaystack(haystack: cv.Mat, needle: cv.Mat, confidence: number, scaleSteps: Array<number>, methodType: MethodNameType, debug: boolean, firstMach: boolean = false) {
     const results: MatchResult[] = [];
     let overWrittenScaledHaystackResult = { results: results, haystack: haystack };
     let overwrittenHaystack = haystack;
@@ -194,9 +156,9 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     haystack: cv.Mat,
     needle: cv.Mat,
     confidence: number = 0.8,
-    scaleSteps: Array<number> = this.scaleSteps,
-    methodType: MethodNameType = MethodEnum.TM_CCOEFF_NORMED,
-    debug: boolean = false,
+    scaleSteps: Array<number>,
+    methodType: MethodNameType,
+    debug: boolean,
     firstMatch: boolean = false,
   ): Promise<MatchedResults> {
     const results: MatchResult[] = [];
