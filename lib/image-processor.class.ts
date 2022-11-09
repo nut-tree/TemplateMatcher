@@ -24,9 +24,9 @@ export const fromImageWithAlphaChannel = async (
 ): Promise<cv.Mat> => {
     let mat: cv.Mat;
     if (img.colorMode === ColorMode.RGB) {
-        mat = await new cv.Mat(img.data, img.height, img.width, cv.CV_8UC4).cvtColorAsync(cv.COLOR_RGBA2BGR);
+        mat = await new cv.Mat(img.data, img.height, img.width, cv.CV_8UC4).cvtColorAsync(cv.COLOR_RGBA2GRAY);
     } else {
-        mat = await new cv.Mat(img.data, img.height, img.width, cv.CV_8UC4).cvtColorAsync(cv.COLOR_BGRA2BGR);
+        mat = await new cv.Mat(img.data, img.height, img.width, cv.CV_8UC4).cvtColorAsync(cv.COLOR_BGRA2GRAY);
     }
     if (roi) {
         return mat.getRegion(determineROI(img, roi));
@@ -50,9 +50,9 @@ export const fromImageWithoutAlphaChannel = async (
 ): Promise<cv.Mat> => {
     let mat: cv.Mat;
     if (img.colorMode === ColorMode.RGB) {
-        mat = await new cv.Mat(img.data, img.height, img.width, cv.CV_8UC3).cvtColorAsync(cv.COLOR_RGB2BGR);
+        mat = await new cv.Mat(img.data, img.height, img.width, cv.CV_8UC3).cvtColorAsync(cv.COLOR_RGB2GRAY);
     } else {
-        mat = new cv.Mat(img.data, img.height, img.width, cv.CV_8UC3);
+        mat = await new cv.Mat(img.data, img.height, img.width, cv.CV_8UC3).cvtColorAsync(cv.COLOR_BGR2GRAY);
     }
     if (roi) {
         return mat.getRegion(determineROI(img, roi));

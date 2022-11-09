@@ -1,20 +1,20 @@
 {
-  "name": "@nut-tree/template-matcher",
-  "version": "1.0.0",
+  "name": "@udarrr/template-matcher",
+  "version": "1.0.1",
   "main": "dist/index",
   "typings": "dist/index",
   "description": "Locate images on your screen using template matching in nut.js",
   "author": {
-    "name": "Simon Hofmann",
+    "name": "Simon Hofmann & Siarhei Kliushnikau",
     "email": "kontakt@s1h.org",
     "url": "https://s1h.org"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/nut-tree/TemplateMatcher.git"
+    "url": "https://github.com/udarrr/TemplateMatcher.git"
   },
   "bugs": {
-    "url": "https://github.com/nut-tree/TemplateMatcher/issues"
+    "url": "https://github.com/udarrr/TemplateMatcher/issues"
   },
   "os": [
     "linux",
@@ -48,7 +48,7 @@
     "opencv4nodejs-prebuilt": "5.3.3"
   },
   "devDependencies": {
-    "@nut-tree/nut-js": "^2.0.0",
+    "@nut-tree/nut-js": "^2.3.0",
     "@types/jest": "27.0.1",
     "@types/node": "16.7.10",
     "jest": "27.1.0",
