@@ -1,6 +1,6 @@
 import * as cv from "opencv4nodejs-prebuilt";
 import {mockPartial} from "sneer";
-import { MatchTemplate } from "./match-image.function";
+import { MatchTemplate, MethodEnum } from "./match-image.function";
 
 jest.mock('jimp', () => {});
 
@@ -32,7 +32,7 @@ describe("matchImages", () => {
         });
 
         // WHEN
-        const result = await MatchTemplate.matchImages(haystackMock, needleMock);
+        const result = await MatchTemplate.matchImages(haystackMock, needleMock, MethodEnum.TM_CCOEFF_NORMED);
 
         // THEN
         expect(result.data.location.left).toEqual(minLocX);

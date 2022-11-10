@@ -100,7 +100,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     let { haystack, needle, confidence, scaleSteps, methodType, debug } = await this.initData(matchRequest);
 
     if (!matchRequest.searchMultipleScales) {
-      const matches = await MatchTemplate.matchImages(haystack, needle, methodType, (matchRequest as CustomMatchRequest).customOptions?.debug);
+      const matches = await MatchTemplate.matchImages(haystack, needle, methodType, debug);
       const result = await this.getValidatedMatches([matches.data], matchRequest, confidence);
 
       return result[0];

@@ -17,7 +17,7 @@ export class MatchTemplate {
   public static async matchImages(
     haystack: cv.Mat,
     needle: cv.Mat,
-    matchedMethod: MethodNameType = MethodEnum.TM_CCOEFF_NORMED,
+    matchedMethod: MethodNameType,
     debug: boolean = false,
   ): Promise<{
     data: MatchResult;
@@ -51,8 +51,8 @@ export class MatchTemplate {
   public static async matchImagesByWriteOverFounded(
     haystack: cv.Mat,
     needle: cv.Mat,
-    confidence: number = 0.99,
-    matchedMethod: MethodNameType = MethodEnum.TM_CCOEFF_NORMED,
+    confidence: number,
+    matchedMethod: MethodNameType,
     debug: boolean = false,
     firstMach: boolean = false,
   ): Promise<MatchedResults> {
@@ -69,10 +69,8 @@ export class MatchTemplate {
 
     const isMethodTypeMaxOrMin = matchedMethod === MethodEnum.TM_SQDIFF_NORMED || matchedMethod === MethodEnum.TM_SQDIFF;
     let locType: 'minLoc' | 'maxLoc' = isMethodTypeMaxOrMin ? 'minLoc' : 'maxLoc';
-    let confidentOffset = isMethodTypeMaxOrMin && confidence === 0.99 ? 0.008 : -0.19;
-    const finalConfident = confidence + confidentOffset < 1 ? confidence + confidentOffset : confidence;
 
-    while (isMethodTypeMaxOrMin ? minVal <= finalConfident : maxVal > finalConfident) {
+    while (isMethodTypeMaxOrMin ? minVal <= confidence : maxVal > confidence) {
       match = await haystack.matchTemplateAsync(needle, cv[`${matchedMethod}`]);
       minMax = await match.minMaxLocAsync();
       minVal = minMax.minVal;
@@ -88,7 +86,7 @@ export class MatchTemplate {
         prevMaxLoc = maxLoc;
       }
 
-      if (isMethodTypeMaxOrMin ? minVal <= finalConfident : maxVal > finalConfident) {
+      if (isMethodTypeMaxOrMin ? minVal <= confidence : maxVal > confidence) {
         const region = MatchTemplate.getRectangleRegion(minMax, { height: h, width: w }, locType);
         haystack = MatchTemplate.fillReginBlackColor(haystack, { xL: region.xL, yL: region.yL, xR: region.xR, yR: region.yR });
         matchedResults.push(
