@@ -25,14 +25,20 @@ and then just use it in your project once
 
 #### Installation for standalone
 
+`npm i @udarrr/template-matcher`
+
+and connect finder to your project
+
 ```javascript
 import finder from "@udarrr/template-matcher";
 
+//some examples
 const matcheImages = finder.findMatch({haystack: pathToImage, needle: pathToTemplate});
 const matcheWithScreen = finder.findMatch({needle: pathToTemplate});
 
 const matchesImages = finder.findMatches({haystack: pathToImage, needle: pathToTemplate});
 const matchesWithScreen = finder.findMatches({needle: pathToTemplate});
+
 ```
 
 #### Options
@@ -54,6 +60,5 @@ const matchesWithScreen = finder.findMatches({needle: pathToTemplate});
 - scaleSteps:  [0.9]; by default  [1, 0.9, 0.8, 0.7, 0.6, 0.5]
 - debug: true | false by default false
 
-for "TM_SQDIFF" | "TM_SQDIFF_NORMED" confidence by default 0.98
-
-for "TM_CCOEFF" | "TM_CCOEFF_NORMED" | "TM_CCORR" | "TM_CCORR_NORMED" by default 0.8
+- for "TM_SQDIFF" | "TM_SQDIFF_NORMED" confidence by default 0.98
+- for "TM_CCOEFF" | "TM_CCOEFF_NORMED" | "TM_CCORR" | "TM_CCORR_NORMED" by default 0.8
