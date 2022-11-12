@@ -12,7 +12,8 @@
 
 - incresed accuracy (x10)
 - incresed perfomance (~x2)
-- added some customOptions for arguments `params?: OptionalSearchParameters` in [nutjs](https://github.com/nut-tree/nut.js/blob/develop/lib/optionalsearchparameters.class.ts)
+- added some customOptions for arguments `params?: OptionalSearchParameters` in [nutjs](https://github.com/nut-tree/nut.js/blob/develop/lib/optionalsearchparameters.class.ts) !Isn't implemented in nut.js yet
+- added work plugin as standalone
 
 #### Installation
 
@@ -22,13 +23,33 @@ and then just use it in your project once
 
 `import "@udarrr/template-matcher"` or `require("@udarrr/template-matcher")`
 
+#### Examples (standalone option)
+
+```javascript
+import finder from "@udarrr/template-matcher";
+
+const matcheImages = finder.findMatch({haystack: pathToImage, needle: pathToTemplate});
+const matcheWithScreen = finder.findMatch({needle: pathToTemplate});
+
+const matchesImages = finder.findMatches({haystack: pathToImage, needle: pathToTemplate});
+const matchesWithScreen = finder.findMatches({needle: pathToTemplate});
+```
+
 #### Options
 
-`
+```javascript
 {
-    customOptions: {methodType: MethodNameType; scaleSteps: Array<number>; debug: boolean},
+    public searchRegion?: Region,
+    public confidence?: number,
+    public searchMultipleScales?: boolean,
+    customOptions?: {
+                       methodType: MethodNameType; 
+                       scaleSteps: Array<number>; 
+                       roi: Region; 
+                       debug: boolean
+                    },
 }
-`
+```
 
 - methodType: "TM_CCOEFF" | "TM_CCOEFF_NORMED" | "TM_CCORR" | "TM_CCORR_NORMED" | "TM_SQDIFF" | "TM_SQDIFF_NORMED" by default "TM_CCOEFF_NORMED"
 - scaleSteps:  [0.9]; by default  [1, 0.9, 0.8, 0.7, 0.6, 0.5]

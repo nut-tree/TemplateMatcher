@@ -1,11 +1,12 @@
 import * as cv from 'opencv4nodejs-prebuilt';
-import { Image, ImageFinderInterface, MatchRequest, MatchResult } from '@nut-tree/nut-js';
+import { Image, ImageFinderInterface, MatchRequest, MatchResult, Region } from '@nut-tree/nut-js';
 import { MatchedResults, MatchTemplate, MethodEnum, MethodNameType } from './match-image.function';
 import { scaleImage } from './scale-image.function';
-import { fromImageWithAlphaChannel } from './image-processor.class';
+import { determineROI, fromImageWithAlphaChannel, validateSearchRegion } from './image-processor.class';
 import Reader from './image-reader.class';
 import screenshot from 'screenshot-desktop';
 import sizeOf from 'buffer-image-size';
+import sizeOfImage from 'image-size';
 import path from 'path';
 
 type OptionsHaystack = {
@@ -23,31 +24,48 @@ type OptionsSearchMultipleScales = {
 type CustomMatchRequest = OptionsHaystack &
   OptionsNeedle &
   OptionsConfidnce &
-  OptionsSearchMultipleScales & { customOptions?: { methodType: MethodNameType; scaleSteps: Array<number>; debug: boolean } };
+  OptionsSearchMultipleScales & { customOptions?: { methodType: MethodNameType; scaleSteps: Array<number>; roi: Region; debug: boolean } };
 
-async function loadNeedle(image: Image | string): Promise<cv.Mat> {
+async function loadNeedle(image: Image | string, roi?: Region): Promise<{ data: cv.Mat; rect: cv.Rect | null }> {
   if (typeof image !== 'string') {
-    return fromImageWithAlphaChannel(image);
+    return { data: await fromImageWithAlphaChannel(image, roi), rect: null };
   } else {
-    return await new Reader().readToMat(image);
+    let mat = await new Reader().readToMat(image);
+
+    if (!roi) {
+      return { data: mat, rect: null };
+    } else {
+      const dimensions = sizeOfImage(image);
+      const rect = determineROI(new Image(dimensions.width as number, dimensions.height as number, Buffer.from([]), 1, ''), roi);
+
+      return { data: mat.getRegion(rect), rect: rect };
+    }
   }
 }
 
-async function loadHaystack(image?: Image | string): Promise<cv.Mat> {
+async function loadHaystack(image?: Image | string, roi?: Region): Promise<{ data: cv.Mat; rect: cv.Rect | null }> {
   if (typeof image !== 'string' && image) {
-    return fromImageWithAlphaChannel(image);
+    return { data: await fromImageWithAlphaChannel(image, roi), rect: null };
   } else {
     if (!image) {
       const buffer = await screenshot({ format: 'bmp' });
       const dimensions = sizeOf(buffer);
-      const mat = await fromImageWithAlphaChannel(new Image(dimensions.width, dimensions.height, buffer, 1, dimensions.type));
+      const mat = await fromImageWithAlphaChannel(new Image(dimensions.width, dimensions.height, buffer, 1, dimensions.type), roi);
 
-      return await mat.flipAsync(0);
+      return { data: await mat.flipAsync(0), rect: null };
     } else {
       const baseName = path.basename(image);
       const pathToHaystack = await screenshot({ filename: `${baseName}.bmp` });
+      let mat = await new Reader().readToMat(pathToHaystack);
 
-      return await new Reader().readToMat(pathToHaystack);
+      if (!roi) {
+        return { data: mat, rect: null };
+      } else {
+        const dimensions = sizeOfImage(pathToHaystack);
+        const rect = determineROI(new Image(dimensions.width as number, dimensions.height as number, Buffer.from([]), 1, ''), roi);
+
+        return { data: mat.getRegion(rect), rect: rect };
+      }
     }
   }
 }
@@ -80,12 +98,12 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     const methodType = customMatchRequest.customOptions?.methodType || MethodEnum.TM_CCOEFF_NORMED;
     const debug = customMatchRequest.customOptions?.debug || false;
 
-    const needle = await loadNeedle(matchRequest.needle);
-    if (!needle || needle.empty) {
+    const needle = await loadNeedle(matchRequest.needle, customMatchRequest.customOptions?.roi);
+    if (!needle || needle.data.empty) {
       throw new Error(`Failed to load ${typeof matchRequest.needle === 'string' ? matchRequest.needle : matchRequest.needle.id}, got empty image.`);
     }
-    const haystack = await loadHaystack(matchRequest.haystack);
-    if (!haystack || haystack.empty) {
+    const haystack = await loadHaystack(matchRequest.haystack, customMatchRequest.customOptions?.roi);
+    if (!haystack || haystack.data.empty) {
       throw new Error(
         `Failed to load ${
           matchRequest && matchRequest.haystack && typeof matchRequest.haystack === 'string' && !matchRequest.haystack ? matchRequest.haystack : (matchRequest.haystack as Image).id
@@ -93,8 +111,15 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
       );
     }
 
+    if (customMatchRequest.customOptions?.roi) {
+      validateSearchRegion(
+        new Region(Number(needle.rect?.x), Number(needle.rect?.y), Number(needle.rect?.width), Number(needle.rect?.height)),
+        new Region(Number(haystack.rect?.x), Number(haystack.rect?.y), Number(haystack.rect?.width), Number(haystack.rect?.height)),
+      );
+    }
+
     if (matchRequest.searchMultipleScales) {
-      throwOnTooLargeNeedle(haystack, needle, scaleSteps[scaleSteps.length - 1]);
+      throwOnTooLargeNeedle(haystack.data, needle.data, scaleSteps[scaleSteps.length - 1]);
     }
 
     return { haystack: haystack, needle: needle, confidence: confidence, scaleSteps: scaleSteps, methodType: methodType, debug: debug, searchMultipleScales: searchMultipleScales };
@@ -105,10 +130,10 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     let { haystack, needle, confidence, scaleSteps, methodType, debug, searchMultipleScales } = await this.initData(matchRequest);
 
     if (!searchMultipleScales) {
-      const overwrittenResults = await MatchTemplate.matchImagesByWriteOverFounded(haystack, needle, confidence, methodType, debug);
+      const overwrittenResults = await MatchTemplate.matchImagesByWriteOverFounded(haystack.data, needle.data, confidence, methodType, debug);
       matchResults.push(...overwrittenResults.results);
     } else {
-      const scaledResults = await this.searchMultipleScales(haystack, needle, confidence, scaleSteps, methodType, debug);
+      const scaledResults = await this.searchMultipleScales(haystack.data, needle.data, confidence, scaleSteps, methodType, debug);
       matchResults.push(...scaledResults);
     }
     return await this.getValidatedMatches(matchResults, matchRequest as MatchRequest, confidence);
@@ -143,12 +168,12 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     let { haystack, needle, confidence, scaleSteps, methodType, debug, searchMultipleScales } = await this.initData(matchRequest);
 
     if (!searchMultipleScales) {
-      const matches = await MatchTemplate.matchImages(haystack, needle, methodType, debug);
+      const matches = await MatchTemplate.matchImages(haystack.data, needle.data, methodType, debug);
       const result = await this.getValidatedMatches([matches.data], matchRequest as MatchRequest, confidence);
 
       return result[0];
     } else {
-      const scaledResults = await this.searchMultipleScales(haystack, needle, confidence, scaleSteps, methodType, debug, true);
+      const scaledResults = await this.searchMultipleScales(haystack.data, needle.data, confidence, scaleSteps, methodType, debug, true);
       return (await this.getValidatedMatches([scaledResults[0]], matchRequest as MatchRequest, confidence))[0];
     }
   }
