@@ -12,10 +12,10 @@
 
 - incresed accuracy (x10)
 - incresed perfomance (~x2)
-- added some customOptions for arguments `params?: OptionalSearchParameters` in [nutjs](https://github.com/nut-tree/nut.js/blob/develop/lib/optionalsearchparameters.class.ts) !Isn't implemented in nut.js yet
-- added work plugin as standalone
+- added some customOptions for arguments `params?: OptionalSearchParameters` in [nutjs](https://github.com/nut-tree/nut.js/blob/develop/lib/optionalsearchparameters.class.ts) !not implemented in nutjs yet, but available in standalone
+- added standalone
 
-#### Installation
+#### Installation for nutjs
 
 `npm i @udarrr/template-matcher`
 
@@ -23,7 +23,7 @@ and then just use it in your project once
 
 `import "@udarrr/template-matcher"` or `require("@udarrr/template-matcher")`
 
-#### Examples (standalone option)
+#### Installation for standalone
 
 ```javascript
 import finder from "@udarrr/template-matcher";
@@ -39,7 +39,6 @@ const matchesWithScreen = finder.findMatches({needle: pathToTemplate});
 
 ```javascript
 {
-    public searchRegion?: Region,
     public confidence?: number,
     public searchMultipleScales?: boolean,
     customOptions?: {
