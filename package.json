@@ -1,9 +1,9 @@
 {
   "name": "@udarrr/template-matcher",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "main": "dist/index",
   "typings": "dist/index",
-  "description": "Locate images on your screen using template matching in nut.js",
+  "description": "Locate images on your screen using template matching in nut.js or standalone",
   "author": {
     "name": "Simon Hofmann & Siarhei Kliushnikau",
     "email": "kontakt@s1h.org",
@@ -33,7 +33,16 @@
     "screen",
     "monitor",
     "display",
-    "opencv"
+    "opencv",
+    "desktop",
+    "tests",
+    "robot",
+    "machine",
+    "learning",
+    "screenshot",
+    "image",
+    "pixel",
+    "GUI"
   ],
   "scripts": {
     "clean": "rimraf dist",

@@ -44,9 +44,24 @@ const matchesWithScreen = finder.findMatches({needle: pathToTemplate});
 #### Options
 
 ```javascript
+//nutjs options 
 {
-    public confidence?: number,
-    public searchMultipleScales?: boolean,
+    confidence?: number,
+    searchMultipleScales?: boolean,
+    customOptions?: {
+                       methodType: MethodNameType; 
+                       scaleSteps: Array<number>; 
+                       roi: Region; 
+                       debug: boolean
+                    },
+}
+
+//standalone
+{
+    haystack?: string | Image,
+    needle: string | Image,
+    confidence?: number,
+    searchMultipleScales?: boolean,
     customOptions?: {
                        methodType: MethodNameType; 
                        scaleSteps: Array<number>; 
