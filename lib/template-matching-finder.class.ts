@@ -3,15 +3,53 @@ import { Image, ImageFinderInterface, MatchRequest, MatchResult } from '@nut-tre
 import { MatchedResults, MatchTemplate, MethodEnum, MethodNameType } from './match-image.function';
 import { scaleImage } from './scale-image.function';
 import { fromImageWithAlphaChannel } from './image-processor.class';
+import Reader from './image-reader.class';
+import screenshot from 'screenshot-desktop';
+import sizeOf from 'buffer-image-size';
+import path from 'path';
 
-type CustomMatchRequest = MatchRequest & { customOptions?: { methodType: MethodNameType; scaleSteps: Array<number>; debug: boolean } };
+type OptionsHaystack = {
+  -readonly [Property in keyof Pick<MatchRequest, 'haystack'>]?: Image | string;
+};
+type OptionsNeedle = {
+  -readonly [Property in keyof Pick<MatchRequest, 'needle'>]: Image | string;
+};
+type OptionsConfidnce = {
+  -readonly [Property in keyof Pick<MatchRequest, 'confidence'>]?: number;
+};
+type OptionsSearchMultipleScales = {
+  -readonly [Property in keyof Pick<MatchRequest, 'searchMultipleScales'>]?: boolean;
+};
+type CustomMatchRequest = OptionsHaystack &
+  OptionsNeedle &
+  OptionsConfidnce &
+  OptionsSearchMultipleScales & { customOptions?: { methodType: MethodNameType; scaleSteps: Array<number>; debug: boolean } };
 
-async function loadNeedle(image: Image): Promise<cv.Mat> {
-  return fromImageWithAlphaChannel(image);
+async function loadNeedle(image: Image | string): Promise<cv.Mat> {
+  if (typeof image !== 'string') {
+    return fromImageWithAlphaChannel(image);
+  } else {
+    return await new Reader().readToMat(image);
+  }
 }
 
-async function loadHaystack(matchRequest: MatchRequest): Promise<cv.Mat> {
-  return fromImageWithAlphaChannel(matchRequest.haystack);
+async function loadHaystack(image?: Image | string): Promise<cv.Mat> {
+  if (typeof image !== 'string' && image) {
+    return fromImageWithAlphaChannel(image);
+  } else {
+    if (!image) {
+      const buffer = await screenshot({ format: 'bmp' });
+      const dimensions = sizeOf(buffer);
+      const mat = await fromImageWithAlphaChannel(new Image(dimensions.width, dimensions.height, buffer, 1, dimensions.type));
+
+      return await mat.flipAsync(0);
+    } else {
+      const baseName = path.basename(image);
+      const pathToHaystack = await screenshot({ filename: `${baseName}.bmp` });
+
+      return await new Reader().readToMat(pathToHaystack);
+    }
+  }
 }
 
 function throwOnTooLargeNeedle(haystack: cv.Mat, needle: cv.Mat, smallestScaleFactor: number) {
@@ -34,50 +72,55 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
         : (customMatchRequest.customOptions && customMatchRequest.customOptions?.methodType === MethodEnum.TM_CCOEFF_NORMED) ||
           (customMatchRequest.customOptions && customMatchRequest.customOptions?.methodType === MethodEnum.TM_CCORR_NORMED && matchRequest.confidence === 0.99)
         ? 0.8
-        : matchRequest.confidence === 0.99
+        : matchRequest.confidence === 0.99 || typeof matchRequest.confidence === 'undefined'
         ? 0.8
         : matchRequest.confidence;
+    const searchMultipleScales = customMatchRequest.searchMultipleScales ? customMatchRequest.searchMultipleScales : true;
     const scaleSteps = customMatchRequest.customOptions?.scaleSteps || [1, 0.9, 0.8, 0.7, 0.6, 0.5];
     const methodType = customMatchRequest.customOptions?.methodType || MethodEnum.TM_CCOEFF_NORMED;
     const debug = customMatchRequest.customOptions?.debug || false;
 
     const needle = await loadNeedle(matchRequest.needle);
     if (!needle || needle.empty) {
-      throw new Error(`Failed to load ${matchRequest.needle.id}, got empty image.`);
+      throw new Error(`Failed to load ${typeof matchRequest.needle === 'string' ? matchRequest.needle : matchRequest.needle.id}, got empty image.`);
     }
-    const haystack = await loadHaystack(matchRequest);
+    const haystack = await loadHaystack(matchRequest.haystack);
     if (!haystack || haystack.empty) {
-      throw new Error(`Failed to load ${matchRequest.haystack.id}, got empty image.`);
+      throw new Error(
+        `Failed to load ${
+          matchRequest && matchRequest.haystack && typeof matchRequest.haystack === 'string' && !matchRequest.haystack ? matchRequest.haystack : (matchRequest.haystack as Image).id
+        }, got empty image.`,
+      );
     }
 
     if (matchRequest.searchMultipleScales) {
       throwOnTooLargeNeedle(haystack, needle, scaleSteps[scaleSteps.length - 1]);
     }
 
-    return { haystack: haystack, needle: needle, confidence: confidence, scaleSteps: scaleSteps, methodType: methodType, debug: debug };
+    return { haystack: haystack, needle: needle, confidence: confidence, scaleSteps: scaleSteps, methodType: methodType, debug: debug, searchMultipleScales: searchMultipleScales };
   }
 
   public async findMatches(matchRequest: MatchRequest | CustomMatchRequest): Promise<MatchResult[]> {
     let matchResults: Array<MatchResult> = [];
-    let { haystack, needle, confidence, scaleSteps, methodType, debug } = await this.initData(matchRequest);
+    let { haystack, needle, confidence, scaleSteps, methodType, debug, searchMultipleScales } = await this.initData(matchRequest);
 
-    if (!matchRequest.searchMultipleScales) {
+    if (!searchMultipleScales) {
       const overwrittenResults = await MatchTemplate.matchImagesByWriteOverFounded(haystack, needle, confidence, methodType, debug);
       matchResults.push(...overwrittenResults.results);
     } else {
       const scaledResults = await this.searchMultipleScales(haystack, needle, confidence, scaleSteps, methodType, debug);
       matchResults.push(...scaledResults);
     }
-    return await this.getValidatedMatches(matchResults, matchRequest, confidence);
+    return await this.getValidatedMatches(matchResults, matchRequest as MatchRequest, confidence);
   }
 
   private async getValidatedMatches(matchResults: Array<MatchResult>, matchRequest: MatchRequest, confidence: number) {
     const matches = await Promise.all(matchResults).then((results) => {
       results.forEach((matchResult) => {
-        matchResult.location.left /= matchRequest.haystack.pixelDensity.scaleX;
-        matchResult.location.width /= matchRequest.haystack.pixelDensity.scaleX;
-        matchResult.location.top /= matchRequest.haystack.pixelDensity.scaleY;
-        matchResult.location.height /= matchRequest.haystack.pixelDensity.scaleY;
+        matchResult.location.left /= matchRequest.haystack ? matchRequest.haystack.pixelDensity.scaleX : 1;
+        matchResult.location.width /= matchRequest.haystack ? matchRequest.haystack.pixelDensity.scaleX : 1;
+        matchResult.location.top /= matchRequest.haystack ? matchRequest.haystack.pixelDensity.scaleY : 1;
+        matchResult.location.height /= matchRequest.haystack ? matchRequest.haystack.pixelDensity.scaleY : 1;
       });
       return results.sort((first, second) => second.confidence - first.confidence);
     });
@@ -97,16 +140,16 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
   }
 
   public async findMatch(matchRequest: MatchRequest | CustomMatchRequest): Promise<MatchResult> {
-    let { haystack, needle, confidence, scaleSteps, methodType, debug } = await this.initData(matchRequest);
+    let { haystack, needle, confidence, scaleSteps, methodType, debug, searchMultipleScales } = await this.initData(matchRequest);
 
-    if (!matchRequest.searchMultipleScales) {
+    if (!searchMultipleScales) {
       const matches = await MatchTemplate.matchImages(haystack, needle, methodType, debug);
-      const result = await this.getValidatedMatches([matches.data], matchRequest, confidence);
+      const result = await this.getValidatedMatches([matches.data], matchRequest as MatchRequest, confidence);
 
       return result[0];
     } else {
       const scaledResults = await this.searchMultipleScales(haystack, needle, confidence, scaleSteps, methodType, debug, true);
-      return (await this.getValidatedMatches([scaledResults[0]], matchRequest, confidence))[0];
+      return (await this.getValidatedMatches([scaledResults[0]], matchRequest as MatchRequest, confidence))[0];
     }
   }
 
