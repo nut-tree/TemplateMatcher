@@ -9,6 +9,7 @@
     "email": "kontakt@s1h.org",
     "url": "https://s1h.org"
   },
+  "files": ["dist"],
   "repository": {
     "type": "git",
     "url": "https://github.com/udarrr/TemplateMatcher.git"
