@@ -1,13 +1,9 @@
 import * as cv from 'opencv4nodejs-prebuilt';
-import { Image, ImageFinderInterface, MatchRequest, MatchResult, Region } from '@nut-tree/nut-js';
+import { Image, ImageFinderInterface, MatchRequest, MatchResult, Region, screen } from '@nut-tree/nut-js';
 import { MatchedResults, MatchTemplate, MethodEnum, MethodNameType } from './match-image.function';
 import { scaleImage } from './scale-image.function';
 import { determineROI, fromImageWithAlphaChannel, validateSearchRegion } from './image-processor.class';
 import Reader from './image-reader.class';
-import screenshot from 'screenshot-desktop';
-import sizeOf from 'buffer-image-size';
-import sizeOfImage from 'image-size';
-import path from 'path';
 
 type OptionsHaystack = {
   -readonly [Property in keyof Pick<MatchRequest, 'haystack'>]?: Image | string;
@@ -35,36 +31,44 @@ async function loadNeedle(image: Image | string, roi?: Region): Promise<{ data: 
     if (!roi) {
       return { data: mat, rect: null };
     } else {
-      const dimensions = sizeOfImage(image);
-      const rect = determineROI(new Image(dimensions.width as number, dimensions.height as number, Buffer.from([]), 1, ''), roi);
+      const screenPic = await screen.grabRegion(roi);
+      const rect = determineROI(screenPic, roi);
 
       return { data: mat.getRegion(rect), rect: rect };
     }
   }
 }
 
-async function loadHaystack(image?: Image | string, roi?: Region): Promise<{ data: cv.Mat; rect: cv.Rect | null }> {
+async function loadHaystack(
+  image?: Image | string,
+  roi?: Region,
+): Promise<{
+  data: cv.Mat;
+  rect: cv.Rect | null;
+  pixelDensity: {
+    scaleX: number;
+    scaleY: number;
+  };
+}> {
   if (typeof image !== 'string' && image) {
-    return { data: await fromImageWithAlphaChannel(image, roi), rect: null };
+    return { data: await fromImageWithAlphaChannel(image, roi), rect: null, pixelDensity: image.pixelDensity };
   } else {
     if (!image) {
-      const buffer = await screenshot({ format: 'bmp' });
-      const dimensions = sizeOf(buffer);
-      const mat = await fromImageWithAlphaChannel(new Image(dimensions.width, dimensions.height, buffer, 1, dimensions.type), roi);
+      const screenPic = await screen.grab();
+      const mat = await fromImageWithAlphaChannel(screenPic, roi);
 
-      return { data: await mat.flipAsync(0), rect: null };
+      return { data: mat, rect: null, pixelDensity: screenPic.pixelDensity };
     } else {
-      const baseName = path.basename(image);
-      const pathToHaystack = await screenshot({ filename: `${baseName}.bmp` });
-      let mat = await new Reader().readToMat(pathToHaystack);
+      const screenPic = await screen.grab();
+      let mat = await fromImageWithAlphaChannel(screenPic, roi);
 
       if (!roi) {
-        return { data: mat, rect: null };
+        return { data: mat, rect: null, pixelDensity: screenPic.pixelDensity };
       } else {
-        const dimensions = sizeOfImage(pathToHaystack);
-        const rect = determineROI(new Image(dimensions.width as number, dimensions.height as number, Buffer.from([]), 1, ''), roi);
+        const screenPic = await screen.grabRegion(roi);
+        const rect = determineROI(screenPic, roi);
 
-        return { data: mat.getRegion(rect), rect: rect };
+        return { data: mat.getRegion(rect), rect: rect, pixelDensity: screenPic.pixelDensity };
       }
     }
   }
@@ -136,16 +140,23 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
       const scaledResults = await this.searchMultipleScales(haystack.data, needle.data, confidence, scaleSteps, methodType, debug);
       matchResults.push(...scaledResults);
     }
-    return await this.getValidatedMatches(matchResults, matchRequest as MatchRequest, confidence);
+    return await this.getValidatedMatches(matchResults, haystack.pixelDensity, confidence);
   }
 
-  private async getValidatedMatches(matchResults: Array<MatchResult>, matchRequest: MatchRequest, confidence: number) {
+  private async getValidatedMatches(
+    matchResults: Array<MatchResult>,
+    pixelDensity: {
+      scaleX: number;
+      scaleY: number;
+    },
+    confidence: number,
+  ) {
     const matches = await Promise.all(matchResults).then((results) => {
       results.forEach((matchResult) => {
-        matchResult.location.left /= matchRequest.haystack ? matchRequest.haystack.pixelDensity.scaleX : 1;
-        matchResult.location.width /= matchRequest.haystack ? matchRequest.haystack.pixelDensity.scaleX : 1;
-        matchResult.location.top /= matchRequest.haystack ? matchRequest.haystack.pixelDensity.scaleY : 1;
-        matchResult.location.height /= matchRequest.haystack ? matchRequest.haystack.pixelDensity.scaleY : 1;
+        matchResult.location.left /= pixelDensity.scaleX && pixelDensity.scaleY && pixelDensity.scaleX === pixelDensity.scaleY ? pixelDensity.scaleX : 1;
+        matchResult.location.width /= pixelDensity.scaleX && pixelDensity.scaleY && pixelDensity.scaleX === pixelDensity.scaleY ? pixelDensity.scaleX : 1;
+        matchResult.location.top /= pixelDensity.scaleX && pixelDensity.scaleY && pixelDensity.scaleX === pixelDensity.scaleY ? pixelDensity.scaleX : 1;
+        matchResult.location.height /= pixelDensity.scaleX && pixelDensity.scaleY && pixelDensity.scaleX === pixelDensity.scaleY ? pixelDensity.scaleX : 1;
       });
       return results.sort((first, second) => second.confidence - first.confidence);
     });
@@ -158,7 +169,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
       if (bestMatch) {
         throw new Error(`No match with required confidence ${confidence}. Best match: ${bestMatch.confidence}`);
       } else {
-        throw new Error(`Unable to locate on screen with template ${matchRequest.needle.id}, no match!`);
+        throw new Error(`Unable to locate on screen with template, no match!`);
       }
     }
     return potentialMatches;
@@ -169,12 +180,13 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
 
     if (!searchMultipleScales) {
       const matches = await MatchTemplate.matchImages(haystack.data, needle.data, methodType, debug);
-      const result = await this.getValidatedMatches([matches.data], matchRequest as MatchRequest, confidence);
+      const result = await this.getValidatedMatches([matches.data], haystack.pixelDensity, confidence);
 
       return result[0];
     } else {
       const scaledResults = await this.searchMultipleScales(haystack.data, needle.data, confidence, scaleSteps, methodType, debug, true);
-      return (await this.getValidatedMatches([scaledResults[0]], matchRequest as MatchRequest, confidence))[0];
+
+      return (await this.getValidatedMatches([scaledResults[0]], haystack.pixelDensity, confidence))[0];
     }
   }
 

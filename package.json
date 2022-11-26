@@ -1,6 +1,6 @@
 {
   "name": "@udarrr/template-matcher",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "main": "dist/index",
   "typings": "dist/index",
   "description": "Locate images on your screen using template matching in nut.js or standalone",
@@ -9,7 +9,9 @@
     "email": "kontakt@s1h.org",
     "url": "https://s1h.org"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/udarrr/TemplateMatcher.git"
@@ -55,10 +57,7 @@
     "typedoc": "typedoc --options ./typedoc.js --out ./docs lib/"
   },
   "dependencies": {
-    "buffer-image-size": "^0.6.4",
-    "image-size": "^0.9.4",
-    "opencv4nodejs-prebuilt": "5.3.4",
-    "screenshot-desktop": "^1.12.7"
+    "opencv4nodejs-prebuilt": "5.3.4"
   },
   "devDependencies": {
     "@types/jest": "27.0.1",
@@ -72,6 +71,6 @@
     "typescript": "4.4.2"
   },
   "peerDependencies": {
-    "@nut-tree/nut-js": "^2.0.0"
+    "@nut-tree/nut-js": "^2.3.0"
   }
 }
