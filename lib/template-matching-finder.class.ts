@@ -1,8 +1,8 @@
 import * as cv from 'opencv4nodejs-prebuilt';
-import { Image, ImageFinderInterface, MatchRequest, MatchResult, Region, screen } from '@nut-tree/nut-js';
+import { Image, ImageFinderInterface, imageResource, MatchRequest, MatchResult, Region, screen } from '@nut-tree/nut-js';
 import { MatchedResults, MatchTemplate, MethodEnum, MethodNameType } from './match-image.function';
 import { scaleImage } from './scale-image.function';
-import { determineROI, fromImageWithAlphaChannel, validateSearchRegion } from './image-processor.class';
+import { fromImageWithAlphaChannel, validateSearchRegion } from './image-processor.class';
 import Reader from './image-reader.class';
 
 type OptionsHaystack = {
@@ -26,15 +26,10 @@ async function loadNeedle(image: Image | string, roi?: Region): Promise<{ data: 
   if (typeof image !== 'string') {
     return { data: await fromImageWithAlphaChannel(image, roi), rect: null };
   } else {
-    let mat = await new Reader().readToMat(image);
-
     if (!roi) {
-      return { data: mat, rect: null };
+      return { data: await new Reader().readToMat(image), rect: null };
     } else {
-      const screenPic = await screen.grabRegion(roi);
-      const rect = determineROI(screenPic, roi);
-
-      return { data: mat.getRegion(rect), rect: rect };
+      return { data: await fromImageWithAlphaChannel(await imageResource(image), roi), rect: null };
     }
   }
 }
@@ -65,10 +60,9 @@ async function loadHaystack(
       if (!roi) {
         return { data: mat, rect: null, pixelDensity: screenPic.pixelDensity };
       } else {
-        const screenPic = await screen.grabRegion(roi);
-        const rect = determineROI(screenPic, roi);
+        const imageObj = await imageResource(image);
 
-        return { data: mat.getRegion(rect), rect: rect, pixelDensity: screenPic.pixelDensity };
+        return { data: await fromImageWithAlphaChannel(imageObj, roi), rect: null, pixelDensity: imageObj.pixelDensity };
       }
     }
   }

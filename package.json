@@ -1,12 +1,12 @@
 {
   "name": "@udarrr/template-matcher",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "main": "dist/index",
   "typings": "dist/index",
   "description": "Locate images on your screen using template matching in nut.js or standalone",
   "author": {
     "name": "Simon Hofmann & Siarhei Kliushnikau",
-    "email": "kontakt@s1h.org",
+    "email": "kontakt@s1h.org, sergey.klyshnikov2@gmail.com",
     "url": "https://s1h.org"
   },
   "files": [
