@@ -20,65 +20,65 @@ type OptionsSearchMultipleScales = {
 type CustomMatchRequest = OptionsHaystack &
   OptionsNeedle &
   OptionsConfidnce &
-  OptionsSearchMultipleScales & { customOptions?: { methodType: MethodNameType; scaleSteps: Array<number>; roi: Region; debug: boolean } };
-
-async function loadNeedle(image: Image | string, roi?: Region): Promise<{ data: cv.Mat; rect: cv.Rect | null }> {
-  if (typeof image !== 'string') {
-    return { data: await fromImageWithAlphaChannel(image, roi), rect: null };
-  } else {
-    if (!roi) {
-      return { data: await new Reader().readToMat(image), rect: null };
-    } else {
-      return { data: await fromImageWithAlphaChannel(await imageResource(image), roi), rect: null };
-    }
-  }
-}
-
-async function loadHaystack(
-  image?: Image | string,
-  roi?: Region,
-): Promise<{
-  data: cv.Mat;
-  rect: cv.Rect | null;
-  pixelDensity: {
-    scaleX: number;
-    scaleY: number;
-  };
-}> {
-  if (typeof image !== 'string' && image) {
-    return { data: await fromImageWithAlphaChannel(image, roi), rect: null, pixelDensity: image.pixelDensity };
-  } else {
-    if (!image) {
-      const screenPic = await screen.grab();
-      const mat = await fromImageWithAlphaChannel(screenPic, roi);
-
-      return { data: mat, rect: null, pixelDensity: screenPic.pixelDensity };
-    } else {
-      const screenPic = await screen.grab();
-      let mat = await fromImageWithAlphaChannel(screenPic, roi);
-
-      if (!roi) {
-        return { data: mat, rect: null, pixelDensity: screenPic.pixelDensity };
-      } else {
-        const imageObj = await imageResource(image);
-
-        return { data: await fromImageWithAlphaChannel(imageObj, roi), rect: null, pixelDensity: imageObj.pixelDensity };
-      }
-    }
-  }
-}
-
-function throwOnTooLargeNeedle(haystack: cv.Mat, needle: cv.Mat, smallestScaleFactor: number) {
-  const scaledRows = smallestScaleFactor * needle.rows;
-  const scaledCols = smallestScaleFactor * needle.cols;
-
-  if (scaledRows > haystack.rows || scaledCols > haystack.cols) {
-    throw new Error('Search input is too large, try using a smaller template image.');
-  }
-}
+  OptionsSearchMultipleScales & { customOptions?: { methodType?: MethodNameType; scaleSteps?: Array<number>; roi?: Region; debug?: boolean } };
 
 export default class TemplateMatchingFinder implements ImageFinderInterface {
   constructor() {}
+
+  private async loadNeedle(image: Image | string, roi?: Region): Promise<{ data: cv.Mat; rect: cv.Rect | null }> {
+    if (typeof image !== 'string') {
+      return { data: await fromImageWithAlphaChannel(image, roi), rect: null };
+    } else {
+      if (!roi) {
+        return { data: await new Reader().readToMat(image), rect: null };
+      } else {
+        return { data: await fromImageWithAlphaChannel(await imageResource(image), roi), rect: null };
+      }
+    }
+  }
+
+  private async loadHaystack(
+    image?: Image | string,
+    roi?: Region,
+  ): Promise<{
+    data: cv.Mat;
+    rect: cv.Rect | null;
+    pixelDensity: {
+      scaleX: number;
+      scaleY: number;
+    };
+  }> {
+    if (typeof image !== 'string' && image) {
+      return { data: await fromImageWithAlphaChannel(image, roi), rect: null, pixelDensity: image.pixelDensity };
+    } else {
+      if (!image) {
+        const screenPic = await screen.grab();
+        const mat = await fromImageWithAlphaChannel(screenPic, roi);
+
+        return { data: mat, rect: null, pixelDensity: screenPic.pixelDensity };
+      } else {
+        const screenPic = await screen.grab();
+        let mat = await fromImageWithAlphaChannel(screenPic, roi);
+
+        if (!roi) {
+          return { data: mat, rect: null, pixelDensity: screenPic.pixelDensity };
+        } else {
+          const imageObj = await imageResource(image);
+
+          return { data: await fromImageWithAlphaChannel(imageObj, roi), rect: null, pixelDensity: imageObj.pixelDensity };
+        }
+      }
+    }
+  }
+
+  private throwOnTooLargeNeedle(haystack: cv.Mat, needle: cv.Mat, smallestScaleFactor: number) {
+    const scaledRows = smallestScaleFactor * needle.rows;
+    const scaledCols = smallestScaleFactor * needle.cols;
+
+    if (scaledRows > haystack.rows || scaledCols > haystack.cols) {
+      throw new Error('Search input is too large, try using a smaller template image.');
+    }
+  }
 
   private async initData(matchRequest: MatchRequest | CustomMatchRequest) {
     const customMatchRequest = matchRequest as CustomMatchRequest;
@@ -96,11 +96,11 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     const methodType = customMatchRequest.customOptions?.methodType || MethodEnum.TM_CCOEFF_NORMED;
     const debug = customMatchRequest.customOptions?.debug || false;
 
-    const needle = await loadNeedle(matchRequest.needle, customMatchRequest.customOptions?.roi);
+    const needle = await this.loadNeedle(matchRequest.needle, customMatchRequest.customOptions?.roi);
     if (!needle || needle.data.empty) {
       throw new Error(`Failed to load ${typeof matchRequest.needle === 'string' ? matchRequest.needle : matchRequest.needle.id}, got empty image.`);
     }
-    const haystack = await loadHaystack(matchRequest.haystack, customMatchRequest.customOptions?.roi);
+    const haystack = await this.loadHaystack(matchRequest.haystack, customMatchRequest.customOptions?.roi);
     if (!haystack || haystack.data.empty) {
       throw new Error(
         `Failed to load ${
@@ -117,7 +117,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     }
 
     if (matchRequest.searchMultipleScales) {
-      throwOnTooLargeNeedle(haystack.data, needle.data, scaleSteps[scaleSteps.length - 1]);
+      this.throwOnTooLargeNeedle(haystack.data, needle.data, scaleSteps[scaleSteps.length - 1]);
     }
 
     return { haystack: haystack, needle: needle, confidence: confidence, scaleSteps: scaleSteps, methodType: methodType, debug: debug, searchMultipleScales: searchMultipleScales };
