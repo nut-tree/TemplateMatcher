@@ -167,12 +167,13 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     confidence: number,
     roi: Region | undefined,
   ) {
-    matchResults = this.getDecreasedRectByPixelDensity(matchResults, pixelDensity);
-
-    if (roi) {
+    if (!roi) {
+      matchResults = this.getDecreasedRectByPixelDensity(matchResults, pixelDensity);
+    } else {
       matchResults = matchResults.map((m) => {
         return { confidence: m.confidence, error: m.error, location: new Region(m.location.left + roi.left, m.location.top + roi.top, m.location.width, m.location.height) };
       });
+      matchResults = this.getDecreasedRectByPixelDensity(matchResults, pixelDensity);
       validateSearchRegion(new Region(Number(roi.left), Number(roi.top), Number(roi.width), Number(roi.height)), new Region(0, 0, await screen.width(), await screen.height()));
     }
     matchResults.sort((first, second) => second.confidence - first.confidence);
