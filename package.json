@@ -57,7 +57,6 @@
     "typedoc": "typedoc --options ./typedoc.js --out ./docs lib/"
   },
   "dependencies": {
-    "@nut-tree/nut-js": "^2.3.0",
     "opencv4nodejs-prebuilt": "5.3.4"
   },
   "devDependencies": {
