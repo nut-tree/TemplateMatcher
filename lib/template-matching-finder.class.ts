@@ -10,19 +10,32 @@ type OptionsHaystack = {
 type OptionsNeedle = {
   -readonly [Property in keyof Pick<MatchRequest, 'needle'>]: Image | string;
 };
-type OptionsConfidnce = {
+type OptionsConfidence = {
   -readonly [Property in keyof Pick<MatchRequest, 'confidence'>]?: number;
 };
 type OptionsSearchMultipleScales = {
   -readonly [Property in keyof Pick<MatchRequest, 'searchMultipleScales'>]?: boolean;
 };
-type CustomMatchRequest = OptionsHaystack &
-  OptionsNeedle &
-  OptionsConfidnce &
-  OptionsSearchMultipleScales & { customOptions?: { methodType?: MethodNameType; scaleSteps?: Array<number>; roi?: Region; debug?: boolean } };
+type CustomOptionsType = { customOptions?: { methodType?: MethodNameType; scaleSteps?: Array<number>; roi?: Region; debug?: boolean } };
+
+type CustomMatchRequest = OptionsHaystack & OptionsNeedle & OptionsConfidence & OptionsSearchMultipleScales & CustomOptionsType;
+
+export type CustomConfigType = OptionsConfidence & OptionsSearchMultipleScales & CustomOptionsType;
 
 export default class TemplateMatchingFinder implements ImageFinderInterface {
-  constructor() {}
+  private _config: CustomConfigType;
+
+  constructor() {
+    this._config = { confidence: 0.8, searchMultipleScales: true, customOptions: { scaleSteps: [1, 0.9, 0.8, 0.7, 0.6, 0.5], methodType: MethodEnum.TM_CCOEFF_NORMED, debug: false } };
+  }
+
+  get() {
+    return this._config;
+  }
+
+  set(config: CustomConfigType) {
+    this._config = { ...config, ...this._config };
+  }
 
   private async loadNeedle(image: Image | string): Promise<{ data: cv.Mat }> {
     if (typeof image !== 'string') {
@@ -83,14 +96,14 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
         ? 0.998
         : (customMatchRequest.customOptions && customMatchRequest.customOptions?.methodType === MethodEnum.TM_CCOEFF_NORMED) ||
           (customMatchRequest.customOptions && customMatchRequest.customOptions?.methodType === MethodEnum.TM_CCORR_NORMED && matchRequest.confidence === 0.99)
-        ? 0.8
+        ? (this._config.confidence as number)
         : matchRequest.confidence === 0.99 || typeof matchRequest.confidence === 'undefined'
-        ? 0.8
+        ? (this._config.confidence as number)
         : matchRequest.confidence;
-    const searchMultipleScales = customMatchRequest.searchMultipleScales ? customMatchRequest.searchMultipleScales : true;
-    const scaleSteps = customMatchRequest.customOptions?.scaleSteps || [1, 0.9, 0.8, 0.7, 0.6, 0.5];
-    const methodType = customMatchRequest.customOptions?.methodType || MethodEnum.TM_CCOEFF_NORMED;
-    const debug = customMatchRequest.customOptions?.debug || false;
+    const searchMultipleScales = customMatchRequest.searchMultipleScales ? customMatchRequest.searchMultipleScales : this._config.searchMultipleScales;
+    const scaleSteps = customMatchRequest.customOptions?.scaleSteps || (this._config.customOptions?.scaleSteps as Array<number>);
+    const methodType = customMatchRequest.customOptions?.methodType || (this._config.customOptions?.methodType as MethodNameType);
+    const debug = customMatchRequest.customOptions?.debug || (this._config.customOptions?.debug as boolean);
 
     const needle = await this.loadNeedle(matchRequest.needle);
     if (!needle || needle.data.empty) {
