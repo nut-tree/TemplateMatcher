@@ -16,11 +16,12 @@ type OptionsConfidence = {
 type OptionsSearchMultipleScales = {
   -readonly [Property in keyof Pick<MatchRequest, 'searchMultipleScales'>]?: boolean;
 };
-type CustomOptionsType = { customOptions?: { methodType?: MethodNameType; scaleSteps?: Array<number>; roi?: Region; debug?: boolean } };
-
+type CustomOptionTypeRoi = { roi?: Region };
+type CustomOptionsTypePartial = { customOptions?: { methodType?: MethodNameType; scaleSteps?: Array<number>; debug?: boolean } };
+type CustomOptionsType = { customOptions?: { methodType?: MethodNameType; scaleSteps?: Array<number>; debug?: boolean } & CustomOptionTypeRoi };
 type CustomMatchRequest = OptionsHaystack & OptionsNeedle & OptionsConfidence & OptionsSearchMultipleScales & CustomOptionsType;
 
-export type CustomConfigType = OptionsConfidence & OptionsSearchMultipleScales & CustomOptionsType;
+export type CustomConfigType = OptionsConfidence & OptionsSearchMultipleScales & CustomOptionsTypePartial;
 
 export default class TemplateMatchingFinder implements ImageFinderInterface {
   private _config: CustomConfigType;
@@ -29,12 +30,12 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     this._config = { confidence: 0.8, searchMultipleScales: true, customOptions: { scaleSteps: [1, 0.9, 0.8, 0.7, 0.6, 0.5], methodType: MethodEnum.TM_CCOEFF_NORMED, debug: false } };
   }
 
-  get() {
+  getConfig() {
     return this._config;
   }
 
-  set(config: CustomConfigType) {
-    this._config = { ...config, ...this._config };
+  setConfig(config: CustomConfigType) {
+    this._config = { ...this._config, ...config };
   }
 
   private async loadNeedle(image: Image | string): Promise<{ data: cv.Mat }> {
