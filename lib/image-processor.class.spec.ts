@@ -1,7 +1,7 @@
 import {resolve} from "path";
 import {Region} from "@nut-tree/nut-js";
 import ImageReader from "./image-reader.class";
-import {fromImageWithAlphaChannel, fromImageWithoutAlphaChannel} from "./image-processor.class";
+import {determineMatRectROI, fromImageWithAlphaChannel, fromImageWithoutAlphaChannel} from "./image-processor.class";
 
 jest.mock('jimp', () => {});
 
@@ -51,7 +51,7 @@ describe("ImageProcessor with ROI", () => {
         // WHEN
         const mat = await fromImageWithoutAlphaChannel(
             image,
-            new Region(-100, -100, 10, 10)
+          determineMatRectROI(image,new Region(-100, -100, 10, 10))
         );
 
         // THEN
@@ -71,7 +71,7 @@ describe("ImageProcessor with ROI", () => {
         // WHEN
         const mat = await fromImageWithoutAlphaChannel(
             image,
-            new Region(10, 10, image.width * 2, image.height * 2)
+            determineMatRectROI(image, new Region(10, 10, image.width * 2, image.height * 2))
         );
 
         // THEN

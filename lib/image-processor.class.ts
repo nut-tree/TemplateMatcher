@@ -1,12 +1,16 @@
 import * as cv from "opencv4nodejs-prebuilt";
 import {ColorMode, Image, Region} from "@nut-tree/nut-js";
 
-export function determineROI(img: Image, roi: Region): cv.Rect {
+export function determineMatRectROI(img: Image, roi: Region): cv.Rect {
     return new cv.Rect(
         Math.min(Math.max(roi.left, 0), img.width),
         Math.min(Math.max(roi.top, 0), img.height),
         Math.min(roi.width, img.width - roi.left),
         Math.min(roi.height, img.height - roi.top));
+}
+
+export function determineRegionRectROI(roi: cv.Rect): Region {
+    return new Region(roi.x,roi.y,roi.width,roi.height);
 }
 
 export function validateSearchRegion(search: Region, screen: Region) {
@@ -53,7 +57,7 @@ export function validateSearchRegion(search: Region, screen: Region) {
  */
 export const fromImageWithAlphaChannel = async (
     img: Image,
-    roi?: Region,
+    roi?: cv.Rect,
 ): Promise<cv.Mat> => {
     let mat: cv.Mat;
     if (img.colorMode === ColorMode.RGB) {
@@ -62,7 +66,7 @@ export const fromImageWithAlphaChannel = async (
         mat = await new cv.Mat(img.data, img.height, img.width, cv.CV_8UC4).cvtColorAsync(cv.COLOR_BGRA2GRAY);
     }
     if (roi) {
-        return mat.getRegion(determineROI(img, roi));
+        return mat.getRegion(roi);
     } else {
         return mat;
     }
@@ -79,7 +83,7 @@ export const fromImageWithAlphaChannel = async (
  */
 export const fromImageWithoutAlphaChannel = async (
     img: Image,
-    roi?: Region,
+    roi?: cv.Rect,
 ): Promise<cv.Mat> => {
     let mat: cv.Mat;
     if (img.colorMode === ColorMode.RGB) {
@@ -88,7 +92,7 @@ export const fromImageWithoutAlphaChannel = async (
         mat = await new cv.Mat(img.data, img.height, img.width, cv.CV_8UC3).cvtColorAsync(cv.COLOR_BGR2GRAY);
     }
     if (roi) {
-        return mat.getRegion(determineROI(img, roi));
+        return mat.getRegion(roi);
     } else {
         return mat;
     }

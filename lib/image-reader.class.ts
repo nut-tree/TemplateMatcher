@@ -12,10 +12,6 @@ export default class implements ImageReader {
       }
     });
   }
-
-  public async readToMat(path: string): Promise<cv.Mat> {
-    return await cv.imreadAsync(path, cv.IMREAD_GRAYSCALE);
-  }
 }
 
 // IMREAD_UNCHANGED : If set, return the loaded image as is (with alpha channel, otherwise it gets cropped).
