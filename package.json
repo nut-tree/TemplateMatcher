@@ -48,6 +48,8 @@
     "GUI"
   ],
   "scripts": {
+    "prepack": "clean-package --remove scripts",
+    "postpack": "clean-package restore",
     "clean": "rimraf dist",
     "compile": "npm run clean && tsc -p .",
     "pretest": "npm pack",
@@ -61,8 +63,6 @@
     "opencv4nodejs-prebuilt": "5.3.4"
   },
   "devDependencies": {
-    "prepack": "clean-package --remove scripts",
-    "postpack": "clean-package restore",
     "@types/jest": "27.0.1",
     "@types/node": "16.7.10",
     "@types/screenshot-desktop": "^1.12.0",
