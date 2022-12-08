@@ -1,4 +1,4 @@
-import * as cv from "opencv4nodejs-prebuilt";
+import * as cv from "opencv4nodejs-prebuilt-install";
 import {lowerBound} from "./bound-value.function";
 
 export async function scaleImage(image: cv.Mat, scaleFactor: number): Promise<cv.Mat> {

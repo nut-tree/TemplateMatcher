@@ -1,6 +1,6 @@
-import * as cv from 'opencv4nodejs-prebuilt';
+import * as cv from 'opencv4nodejs-prebuilt-install';
 import { MatchResult, Region } from '@nut-tree/nut-js';
-import { Mat, Point2, Vec3 } from 'opencv4nodejs-prebuilt';
+import { Mat, Point2, Vec3 } from 'opencv4nodejs-prebuilt-install';
 
 export enum MethodEnum {
   TM_CCOEFF = 'TM_CCOEFF',

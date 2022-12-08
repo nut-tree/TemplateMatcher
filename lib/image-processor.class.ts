@@ -1,4 +1,4 @@
-import * as cv from "opencv4nodejs-prebuilt";
+import * as cv from "opencv4nodejs-prebuilt-install";
 import {ColorMode, Image, Region} from "@nut-tree/nut-js";
 
 export function determineMatRectROI(img: Image, roi: Region): cv.Rect {

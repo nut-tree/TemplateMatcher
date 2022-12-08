@@ -1,4 +1,4 @@
-import * as cv from 'opencv4nodejs-prebuilt';
+import * as cv from 'opencv4nodejs-prebuilt-install';
 import { Image, ImageFinderInterface, imageResource, MatchRequest, MatchResult, Region, screen } from '@nut-tree/nut-js';
 import { MatchedResults, MatchTemplate, MethodEnum, MethodNameType } from './match-image.function';
 import { scaleImage } from './scale-image.function';

@@ -1,4 +1,4 @@
-import * as cv from "opencv4nodejs-prebuilt";
+import * as cv from "opencv4nodejs-prebuilt-install";
 import {mockPartial} from "sneer";
 import { MatchTemplate, MethodEnum } from "./match-image.function";
 
