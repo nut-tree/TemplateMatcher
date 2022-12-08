@@ -1,14 +1,15 @@
 {
   "name": "@udarrr/template-matcher",
-  "version": "1.2.6",
+  "version": "1.2.8",
   "main": "dist/index",
   "typings": "dist/index",
   "description": "Locate images on your screen using template matching in nut.js or standalone",
   "author": {
-    "name": "Simon Hofmann & Siarhei Kliushnikau",
-    "email": "kontakt@s1h.org, sergey.klyshnikov2@gmail.com",
+    "name": "Simon Hofmann",
+    "email": "kontakt@s1h.org",
     "url": "https://s1h.org"
   },
+  "contributors": ["Siarhei Kliushnikau <sergey.klyshnikov2@gmail.com>"],
   "files": [
     "dist"
   ],
@@ -60,7 +61,7 @@
   },
   "dependencies": {
     "@nut-tree/nut-js": "^2.3.0",
-    "opencv4nodejs-prebuilt-install": "4.1.126"
+    "opencv4nodejs-prebuilt-install": "^4.1.128"
   },
   "devDependencies": {
     "@types/jest": "27.0.1",
