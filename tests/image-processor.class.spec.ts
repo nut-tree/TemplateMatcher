@@ -1,7 +1,7 @@
 import {resolve} from "path";
 import {Region} from "@nut-tree/nut-js";
-import ImageReader from "./image-reader.class";
-import {determineMatRectROI, fromImageWithAlphaChannel, fromImageWithoutAlphaChannel} from "./image-processor.class";
+import ImageReader from "../lib/image-reader.class";
+import {determineMatRectROI, fromImageWithAlphaChannel, fromImageWithoutAlphaChannel} from "../lib/image-processor.class";
 
 jest.mock('jimp', () => {});
 

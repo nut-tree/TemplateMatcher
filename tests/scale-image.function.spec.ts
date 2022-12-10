@@ -1,7 +1,7 @@
 import * as path from "path";
-import {scaleImage} from "./scale-image.function";
-import {fromImageWithoutAlphaChannel} from "./image-processor.class";
-import ImageReader from "./image-reader.class";
+import {scaleImage} from "../lib/scale-image.function";
+import {fromImageWithoutAlphaChannel} from "../lib/image-processor.class";
+import ImageReader from "../lib/image-reader.class";
 
 jest.mock('jimp', () => {
 });

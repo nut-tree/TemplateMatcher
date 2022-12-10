@@ -1,4 +1,4 @@
-const parentPackageJson = require("../../package.json");
+const parentPackageJson = require("../../../package.json");
 const {execSync} = require("child_process");
 const {join} = require("path");
 

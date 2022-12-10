@@ -2,7 +2,6 @@ module.exports = {
   collectCoverageFrom: [
     "index.ts",
     "lib/**/*.ts",
-    "!lib/**/*.spec.ts",
     "!<rootDir>/node_modules/",
   ],
   preset: "ts-jest",

@@ -1,7 +1,7 @@
 import * as path from "path";
 import {MatchRequest, Region} from "@nut-tree/nut-js";
-import ImageReader from "./image-reader.class";
-import TemplateMatchingFinder from "./template-matching-finder.class";
+import ImageReader from "../lib/image-reader.class";
+import TemplateMatchingFinder from "../lib/template-matching-finder.class";
 
 jest.mock('jimp', () => {});
 

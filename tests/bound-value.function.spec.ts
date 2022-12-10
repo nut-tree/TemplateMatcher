@@ -1,4 +1,4 @@
-import {lowerBound, upperBound} from "./bound-value.function";
+import {lowerBound, upperBound} from "../lib/bound-value.function";
 
 describe("lowerBound function", () => {
     it.each([

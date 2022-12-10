@@ -1,5 +1,5 @@
 import {Region} from "@nut-tree/nut-js";
-import {scaleLocation} from "./scale-location.function";
+import {scaleLocation} from "../lib/scale-location.function";
 
 jest.mock('jimp', () => {});
 
