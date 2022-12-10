@@ -8,7 +8,9 @@
     "email": "kontakt@s1h.org",
     "url": "https://s1h.org"
   },
-  "contributors": ["Siarhei Kliushnikau <sergey.klyshnikov2@gmail.com>"],
+  "contributors": [
+    "Siarhei Kliushnikau <sergey.klyshnikov2@gmail.com>"
+  ],
   "license": "Apache-2.0",
   "devDependencies": {
     "@nut-tree/nut-js": "2.3.0"
