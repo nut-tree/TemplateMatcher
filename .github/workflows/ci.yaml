@@ -6,33 +6,7 @@ on:
   pull_request:
 
 jobs:
-  sonar:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up Git repository
-        uses: actions/checkout@v2
-      - name: Set up node
-        uses: actions/setup-node@v2
-        with:
-          node-version: 14
-      - name: 'Install npm@^8'
-        run: npm install --global npm@8.3.1
-      - name: 'Install Linux dependencies'
-        run: |
-          sudo apt-get update
-          sudo apt-get install libudev-dev
-      - name: Install
-        run: npm ci
-      - name: Compile
-        run: npm run compile
-      - name: Run tests
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: npm test
-
   test:
-    needs:
-      - sonar
     name: 'Test on Node v${{ matrix.node }} ${{ matrix.os.name }} ${{ matrix.arch }}'
     runs-on: ${{ matrix.os.name }}-${{ matrix.os.version }}
 
