@@ -8,10 +8,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Tests
-        uses: ./.github/actions/ci.yaml
       - name: Set up Git repository
         uses: actions/checkout@v2
+      - name: Tests
+        uses: ./.github/actions/ci.yaml
       - name: Set up node
         uses: actions/setup-node@v2
         with:
