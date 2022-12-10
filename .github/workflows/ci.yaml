@@ -15,12 +15,10 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 14
-      - name: Setup Docker
-        run: |
-          docker pull s1hofmann/nut-ci:latest
-          docker run -it -d --name nut-ci --shm-size 8gb --user $(id -u):$(id -g) -v ${PWD}:${PWD}:rw s1hofmann/nut-ci:latest bash
       - name: 'Install npm@^8'
-        run: npm install --global npm@8.3.1
+        run: |
+          npm whoami 
+          npm install --global npm@8.3.1
       - name: 'Install Linux dependencies'
         run: |
           sudo apt-get update
@@ -33,8 +31,6 @@ jobs:
         uses: GabrielBB/xvfb-action@v1
         with:
           run: npm test
-      - name: Run Docker E2E tests
-        run: docker exec nut-ci bash -c "bash $PWD/.build/build.sh ${PWD} 14"
 
   test:
     needs:
@@ -51,11 +47,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{matrix.node}}
-      - name: Setup Docker
-        if: ${{matrix.os == 'ubuntu-latest'}}
-        run: |
-          docker pull s1hofmann/nut-ci:latest
-          docker run -it -d --name nut-ci --shm-size 8gb -e VNC_COL_DEPT=32 --user $(id -u):$(id -g) -v ${PWD}:${PWD}:rw s1hofmann/nut-ci:latest bash
       - name: 'Install npm@^8'
         run: npm install --global npm@8.3.1
       - name: Install
@@ -66,6 +57,3 @@ jobs:
         uses: GabrielBB/xvfb-action@v1
         with:
           run: npm test
-      - name: Run Docker E2E tests
-        if: ${{matrix.os == 'ubuntu-latest'}}
-        run: docker exec nut-ci bash -c "bash $PWD/.build/build.sh ${PWD} ${{matrix.node}}"
