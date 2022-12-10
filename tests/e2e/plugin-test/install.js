@@ -5,6 +5,6 @@ const {join} = require("path");
 const version = parentPackageJson.version;
 const packageName = parentPackageJson.name.replace("@", "").replace("\/", "-");
 const fullPackageName = `${packageName}-${version}.tgz`;
-const packagePath = join(process.cwd(), fullPackageName);
+const packagePath = join(__dirname, "..", "..", "..", fullPackageName);
 
 execSync(`npm i --no-save ${packagePath}`);
