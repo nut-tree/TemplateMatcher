@@ -1,4 +1,4 @@
-# OpenCV 4.1.1 Template Matching Image Finder
+# OpenCV 4.1.1 Template Matching Image Finder 
 
 ![Tested](https://github.com/udarrr/TemplateMatcher/workflows/Tests/badge.svg)
 ![Released](https://github.com/udarrr/TemplateMatcher/workflows/Create%20tagged%20release/badge.svg)
