@@ -56,8 +56,7 @@
     "compile": "npm run clean && tsc -p .",
     "pack": "npm pack",
     "test": "jest --runInBand",
-    "publish": "npm publish --tag latest --access=public",
-    "prepublishOnly": "npm run compile"
+    "publish": "npm publish --tag latest --access=public"
   },
   "dependencies": {
     "@nut-tree/nut-js": "^2.3.0",

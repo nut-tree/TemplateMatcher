@@ -68,7 +68,9 @@ jobs:
         run: npm ci
       - name: Publish tagged release to npm
         run: |
+          npm i clean-package -g
           npm whoami
+          npm run compile
           npm run publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
