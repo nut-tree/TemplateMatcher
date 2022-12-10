@@ -24,7 +24,7 @@ nvm install $nodeVersion
 
 npm install --global npm@8.3.1
 npm ci
-npm run pretest
+npm run pack
 pushd tests/e2e/plugin-test
 npm ci
 node install.js
