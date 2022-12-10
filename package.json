@@ -57,8 +57,7 @@
     "pack": "npm pack",
     "test": "jest --runInBand",
     "publish": "npm publish --tag latest --access=public",
-    "prepublishOnly": "npm run compile",
-    "typedoc": "typedoc --options ./typedoc.js --out ./docs lib/"
+    "prepublishOnly": "npm run compile"
   },
   "dependencies": {
     "@nut-tree/nut-js": "^2.3.0",
@@ -67,12 +66,10 @@
   "devDependencies": {
     "@types/jest": "27.0.1",
     "@types/node": "16.7.10",
-    "@types/screenshot-desktop": "^1.12.0",
     "jest": "27.1.0",
     "rimraf": "3.0.2",
     "sneer": "1.0.1",
     "ts-jest": "27.0.5",
-    "typedoc": "0.21.9",
     "typescript": "4.4.2"
   }
 }
