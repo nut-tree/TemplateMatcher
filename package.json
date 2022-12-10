@@ -11,7 +11,7 @@
   },
   "contributors": ["Siarhei Kliushnikau <sergey.klyshnikov2@gmail.com>"],
   "files": [
-    "dist"
+    "dist/lib"
   ],
   "repository": {
     "type": "git",
