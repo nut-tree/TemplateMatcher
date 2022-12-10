@@ -36,7 +36,7 @@ jobs:
       - name: 'Install npm@^8'
         run: npm install --global npm@8.3.1
       - name: Install
-        run: npm ci
+        run: npm ci --unsafe-perm
       - name: Compile
         run: npm run compile
       - name: Run tests
