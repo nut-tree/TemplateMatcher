@@ -12,7 +12,7 @@ import {
     straightTo,
 } from "@nut-tree/nut-js";
 
-import "@nut-tree/template-matcher";
+import "@udarrr/template-matcher";
 
 jest.setTimeout(60000);
 
