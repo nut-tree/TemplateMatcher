@@ -38,7 +38,6 @@ const matchesImages = finder.findMatches({haystack: pathToImage, needle: pathToT
 const matchesWithScreen = finder.findMatches({needle: pathToTemplate});
 
 ```
-
 #### Options
 
 ```javascript
