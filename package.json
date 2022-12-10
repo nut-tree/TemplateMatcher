@@ -10,6 +10,7 @@
     "url": "https://s1h.org"
   },
   "contributors": ["Siarhei Kliushnikau <sergey.klyshnikov2@gmail.com>"],
+  "license": "Apache 2.0",
   "files": [
     "dist/lib"
   ],
