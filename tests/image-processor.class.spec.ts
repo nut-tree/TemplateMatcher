@@ -17,7 +17,7 @@ describe("ImageProcessor", () => {
 
         // THEN
         expect(image.hasAlphaChannel).toBeTruthy();
-        expect(mat.channels).toEqual(3);
+        expect(mat.channels).toEqual(1);
         expect(mat.rows).toEqual(image.height);
         expect(mat.cols).toEqual(image.width);
         expect(mat.empty).toBeFalsy();
@@ -34,7 +34,7 @@ describe("ImageProcessor", () => {
 
         // THEN
         expect(image.hasAlphaChannel).toBeFalsy();
-        expect(mat.channels).toEqual(3);
+        expect(mat.channels).toEqual(1);
         expect(mat.rows).toEqual(image.height);
         expect(mat.cols).toEqual(image.width);
         expect(mat.empty).toBeFalsy();
@@ -56,7 +56,7 @@ describe("ImageProcessor with ROI", () => {
 
         // THEN
         expect(image.hasAlphaChannel).toBeFalsy();
-        expect(mat.channels).toEqual(3);
+        expect(mat.channels).toEqual(1);
         expect(mat.rows).toEqual(10);
         expect(mat.cols).toEqual(10);
         expect(mat.empty).toBeFalsy();
@@ -76,7 +76,7 @@ describe("ImageProcessor with ROI", () => {
 
         // THEN
         expect(image.hasAlphaChannel).toBeFalsy();
-        expect(mat.channels).toEqual(3);
+        expect(mat.channels).toEqual(1);
         expect(mat.rows).toEqual(image.height - 10);
         expect(mat.cols).toEqual(image.width - 10);
         expect(mat.empty).toBeFalsy();

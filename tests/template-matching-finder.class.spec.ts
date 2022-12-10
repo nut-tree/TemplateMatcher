@@ -36,7 +36,7 @@ describe("Template-matching finder", () => {
         const needle = await imageLoader.load(needlePath);
         const minConfidence = 0.99;
         const matchRequest = new MatchRequest(haystack, needle, minConfidence);
-        const expectedRejection = new RegExp(`^No match with required confidence ${minConfidence}. Best match: \\d.\\d*$`)
+        const expectedRejection = new RegExp(`Unable to locate on screen with template, no match!`)
 
         // WHEN
 

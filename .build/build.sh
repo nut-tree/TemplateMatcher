@@ -22,9 +22,10 @@ cd $targetDir
 echo "Installing node version $nodeVersion"
 nvm install $nodeVersion
 
+npm install --global npm@8.3.1
 npm ci
 npm run pretest
-pushd e2e/plugin-test
+pushd tests/e2e/plugin-test
 npm ci
 node install.js
 popd

@@ -56,6 +56,6 @@ jobs:
       - name: Publish tagged release to npm
         run: |
           npm whoami
-          npm publish
+          npm run publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

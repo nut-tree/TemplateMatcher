@@ -32,7 +32,7 @@ describe("matchImages", () => {
         });
 
         // WHEN
-        const result = await MatchTemplate.matchImages(haystackMock, needleMock, MethodEnum.TM_CCOEFF_NORMED);
+        const result = await MatchTemplate.matchImages(haystackMock, needleMock, MethodEnum.TM_SQDIFF_NORMED);
 
         // THEN
         expect(result.data.location.left).toEqual(minLocX);

@@ -3,11 +3,12 @@ set -e
 
 echo $PWD
 
+npm install --global npm@8.3.1
 npm ci
 echo "npm run compile"
 npm run compile
 echo "init e2e test subpackage"
-npm --prefix e2e/tests ci
+npm --prefix tests/e2e/tests ci
 echo "npm run coverage"
 npm run coverage:clean
 npm run coverage -- --coverageDirectory=coverage/unit

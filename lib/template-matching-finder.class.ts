@@ -218,7 +218,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     } else {
       const scaledResults = await this.searchMultipleScales(haystack.data, needle.data, confidence, scaleSteps, methodType, debug, true);
 
-      return (await this.getValidatedMatches([scaledResults[0]], haystack.pixelDensity, confidence, roi))[0];
+      return (await this.getValidatedMatches(scaledResults.length ? [scaledResults[0]] : scaledResults, haystack.pixelDensity, confidence, roi))[0];
     }
   }
 
