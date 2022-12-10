@@ -28,10 +28,10 @@ jobs:
         with:
           node-version: ${{matrix.node}}
       - name: 'Install npm@^7'
-        if: ${{ matrix.node == '13'}}
+        if: ${{ (matrix.node == '13') || (matrix.node == '15')}}
         run: npm install --global npm@7.24.2
       - name: 'Install npm@^8'
-        if: ${{ matrix.node != '13'}}
+        if: ${{ (matrix.node != '13') && (matrix.node != '15')}}
         run: npm install --global npm@8.3.1
       - name: 'Install Linux dependencies'
         if: ${{ matrix.os.name == 'Ubuntu' }}
