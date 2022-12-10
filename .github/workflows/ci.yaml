@@ -33,11 +33,20 @@ jobs:
   test:
     needs:
       - sonar
+    name: 'Test on Node v${{ matrix.node }} ${{ matrix.os.name }} ${{ matrix.arch }}'
+    runs-on: ${{ matrix.os.name }}-${{ matrix.os.version }}
+
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os:
+          - name: Ubuntu
+            version: latest
+          - name: macOS
+            version: latest
+          - name: Windows
+            version: 2019
         node: [ 14 ]
-    runs-on: ${{matrix.os}}
+        arch: [x64]
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v2
@@ -45,6 +54,11 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{matrix.node}}
+      - name: 'Install Linux dependencies'
+        if: ${{ matrix.os.name == 'Ubuntu' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev
       - name: 'Install npm@^8'
         run: npm install --global npm@8.3.1
       - name: Install
@@ -54,4 +68,4 @@ jobs:
       - name: Run tests
         uses: GabrielBB/xvfb-action@v1
         with:
-          run: npm test
+          run: npm run test
