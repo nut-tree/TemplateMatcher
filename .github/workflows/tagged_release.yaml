@@ -71,6 +71,6 @@ jobs:
           npm i clean-package -g
           npm whoami
           npm run compile
-          npm run publish
+          npm run publish_package
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
