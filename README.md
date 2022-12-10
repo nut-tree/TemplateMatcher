@@ -74,3 +74,4 @@ const matchesWithScreen = finder.findMatches({needle: pathToTemplate});
 
 - for "TM_SQDIFF" | "TM_SQDIFF_NORMED" confidence by default 0.98
 - for "TM_CCOEFF" | "TM_CCOEFF_NORMED" | "TM_CCORR" | "TM_CCORR_NORMED" by default 0.8
+
