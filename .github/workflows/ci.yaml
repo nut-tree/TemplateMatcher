@@ -1,9 +1,8 @@
 name: Run CI
 on:
   push:
-    branches-ignore:
+    branches:
       - develop
-      - release/**
   pull_request:
 
 jobs:
