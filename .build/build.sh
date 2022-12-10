@@ -29,7 +29,8 @@ npm run pack
 pushd tests/e2e/plugin-test
 npm ci
 node install.js
-sudo apt-get update
-sudo apt-get install libudev-dev
+su root
+apt-get update
+apt-get install libudev-dev
 popd
 E2E_TEST=1 npm test
