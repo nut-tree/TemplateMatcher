@@ -13,15 +13,21 @@
 
 #### Installation for nutjs
 
-`npm i @udarrr/template-matcher`
+```nodejs
+npm i @udarrr/template-matcher
+```
 
 and then just use it in your project once
 
-`import "@udarrr/template-matcher"` or `require("@udarrr/template-matcher")`
+```javascript
+import "@udarrr/template-matcher"` or `require("@udarrr/template-matcher")
+```
 
 #### Installation for standalone
 
-`npm i @udarrr/template-matcher`
+```nodejs
+npm i @udarrr/template-matcher
+```
 
 and connect finder to your project
 
@@ -29,13 +35,13 @@ and connect finder to your project
 import finder from "@udarrr/template-matcher";
 
 //some examples
-const matcheImages = finder.findMatch({haystack: pathToImage, needle: pathToTemplate});
-const matcheWithScreen = finder.findMatch({needle: pathToTemplate});
+const matcheImages = await finder.findMatch({haystack: pathToImage, needle: pathToTemplate});
+const matcheWithScreen = await finder.findMatch({needle: pathToTemplate});
 
-const matchesImages = finder.findMatches({haystack: pathToImage, needle: pathToTemplate});
-const matchesWithScreen = finder.findMatches({needle: pathToTemplate});
-
+const matchesImages = await finder.findMatches({haystack: pathToImage, needle: pathToTemplate});
+const matchesWithScreen = await finder.findMatches({needle: pathToTemplate});
 ```
+
 #### Options
 
 ```javascript
@@ -50,7 +56,9 @@ const matchesWithScreen = finder.findMatches({needle: pathToTemplate});
                        debug: boolean
                     },
 }
+```
 
+```typescript
 //standalone
 {
     haystack?: string | Image,
@@ -66,9 +74,11 @@ const matchesWithScreen = finder.findMatches({needle: pathToTemplate});
 }
 ```
 
-- methodType: "TM_CCOEFF" | "TM_CCOEFF_NORMED" | "TM_CCORR" | "TM_CCORR_NORMED" | "TM_SQDIFF" | "TM_SQDIFF_NORMED" by default "TM_CCOEFF_NORMED"
-- scaleSteps:  [0.9]; by default  [1, 0.9, 0.8, 0.7, 0.6, 0.5]
-- debug: true | false by default false
+```javascript
+// methodType: "TM_CCOEFF" | "TM_CCOEFF_NORMED" | "TM_CCORR" | "TM_CCORR_NORMED" | "TM_SQDIFF" | "TM_SQDIFF_NORMED" by default "TM_CCOEFF_NORMED"
+// scaleSteps:  [0.9]; by default  [1, 0.9, 0.8, 0.7, 0.6, 0.5]
+// debug: true | false by default false
 
-- for "TM_SQDIFF" | "TM_SQDIFF_NORMED" confidence by default 0.98
-- for "TM_CCOEFF" | "TM_CCOEFF_NORMED" | "TM_CCORR" | "TM_CCORR_NORMED" by default 0.8
+// for "TM_SQDIFF" | "TM_SQDIFF_NORMED" confidence by default 0.98
+// for "TM_CCOEFF" | "TM_CCOEFF_NORMED" | "TM_CCORR" | "TM_CCORR_NORMED" by default 0.8
+```
