@@ -15,10 +15,6 @@ jobs:
         os:
           - name: Ubuntu
             version: latest
-          - name: macOS
-            version: latest
-          - name: Windows
-            version: 2019
         node: ['14']
         arch: [x64]
     steps:
