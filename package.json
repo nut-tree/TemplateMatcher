@@ -39,7 +39,6 @@
   "scripts": {
     "clean": "rimraf dist",
     "compile": "npm run clean && tsc -p .",
-    "pretest": "npm pack",
     "test": "jest --runInBand",
     "publish-next": "npm publish --tag next",
     "prepublishOnly": "npm run compile"
