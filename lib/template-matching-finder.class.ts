@@ -4,12 +4,13 @@ import {matchImages} from "./match-image.function";
 import {scaleImage} from "./scale-image.function";
 import {scaleLocation} from "./scale-location.function";
 import {fromImageWithAlphaChannel} from "./image-processor.class";
+import {TemplateMatcherProviderData} from "../index";
 
 async function loadNeedle(image: Image): Promise<cv.Mat> {
     return fromImageWithAlphaChannel(image);
 }
 
-async function loadHaystack(matchRequest: MatchRequest): Promise<cv.Mat> {
+async function loadHaystack<PROVIDER_DATA_TYPE>(matchRequest: MatchRequest<Image, PROVIDER_DATA_TYPE>): Promise<cv.Mat> {
     return fromImageWithAlphaChannel(matchRequest.haystack);
 }
 
@@ -28,7 +29,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     constructor() {
     }
 
-    public async findMatches(matchRequest: MatchRequest): Promise<MatchResult[]> {
+    public async findMatches<PROVIDER_DATA_TYPE>(matchRequest: MatchRequest<Image, PROVIDER_DATA_TYPE>): Promise<MatchResult[]> {
         const needle = await loadNeedle(matchRequest.needle);
         if (!needle || needle.empty) {
             throw new Error(
@@ -49,7 +50,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
             new MatchResult(matchResult.confidence, matchResult.location)
         ];
 
-        if (matchRequest.searchMultipleScales) {
+        if ((matchRequest.providerData as TemplateMatcherProviderData)?.searchMultipleScales ?? true) {
             const scaledResults = await this.searchMultipleScales(needle, haystack);
             matchResults.push(...scaledResults)
         }
@@ -79,7 +80,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
         return potentialMatches;
     }
 
-    public async findMatch(matchRequest: MatchRequest): Promise<MatchResult> {
+    public async findMatch<PROVIDER_DATA_TYPE>(matchRequest: MatchRequest<Image, PROVIDER_DATA_TYPE>): Promise<MatchResult> {
         const matches = await this.findMatches(matchRequest);
         return matches[0];
     }

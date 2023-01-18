@@ -6,7 +6,17 @@ export default class implements ImageReader {
         return new Promise<Image>(async (resolve, reject) => {
             try {
                 const image = await cv.imreadAsync(path, cv.IMREAD_UNCHANGED);
-                resolve(new Image(image.cols, image.rows, image.getData(), image.channels, path));
+                resolve(
+                    new Image(
+                        image.cols,
+                        image.rows,
+                        image.getData(),
+                        image.channels,
+                        path,
+                        image.getData().length / (image.cols * image.rows),
+                        image.getData().length / image.rows / 8
+                    )
+                );
             } catch (e) {
                 reject(`Failed to load image from '${path}'`);
             }
