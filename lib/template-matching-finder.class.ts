@@ -50,7 +50,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
             new MatchResult(matchResult.confidence, matchResult.location)
         ];
 
-        if ((matchRequest.providerData as TemplateMatcherProviderData).searchMultipleScales ?? true) {
+        if ((matchRequest.providerData as TemplateMatcherProviderData)?.searchMultipleScales ?? true) {
             const scaledResults = await this.searchMultipleScales(needle, haystack);
             matchResults.push(...scaledResults)
         }
