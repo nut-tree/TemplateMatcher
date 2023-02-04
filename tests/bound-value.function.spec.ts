@@ -1,4 +1,4 @@
-import {lowerBound, upperBound} from "../lib/bound-value.function";
+import {ScaleImage} from '../lib/scale-image.function'
 
 describe("lowerBound function", () => {
     it.each([
@@ -9,7 +9,7 @@ describe("lowerBound function", () => {
     ])("Input: %f, Boundary: %f, minValue: %f, Expected: %f",
         (input: number, boundary: number, minValue: number, expected: number) => {
             // WHEN
-            const result = lowerBound(input, boundary, minValue);
+            const result = ScaleImage.lowerBound(input, boundary, minValue);
 
             // THEN
             expect(result).toBe(expected);
@@ -25,7 +25,7 @@ describe("upperBound function", () => {
     ])("Input: %f, Boundary: %f, maxValue: %f, Expected: %f",
         (input: number, boundary: number, maxValue: number, expected: number) => {
             // WHEN
-            const result = upperBound(input, boundary, maxValue);
+            const result = ScaleImage.upperBound(input, boundary, maxValue);
 
             // THEN
             expect(result).toBe(expected);

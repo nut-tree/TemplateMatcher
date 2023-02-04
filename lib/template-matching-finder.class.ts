@@ -1,8 +1,8 @@
 import * as cv from 'opencv4nodejs-prebuilt-install';
 import { Image, ImageFinderInterface, imageResource, MatchRequest, MatchResult, Region, screen } from '@nut-tree/nut-js';
 import { MatchedResults, MatchTemplate, MethodEnum, MethodNameType } from './match-image.function';
-import { scaleImage } from './scale-image.function';
-import { determineMatRectROI, determineRegionRectROI, fromImageWithAlphaChannel, validateSearchRegion } from './image-processor.class';
+import { ScaleImage } from './scale-image.function';
+import { ImageProcessor } from './image-processor.class';
 
 type OptionsHaystack = {
   -readonly [Property in keyof Pick<MatchRequest, 'haystack'>]?: Image | string;
@@ -40,9 +40,9 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
 
   private async loadNeedle(image: Image | string): Promise<{ data: cv.Mat }> {
     if (typeof image !== 'string') {
-      return { data: await fromImageWithAlphaChannel(image) };
+      return { data: await ImageProcessor.fromImageWithAlphaChannel(image) };
     } else {
-      return { data: await fromImageWithAlphaChannel(await imageResource(image)) };
+      return { data: await ImageProcessor.fromImageWithAlphaChannel(await imageResource(image)) };
     }
   }
 
@@ -58,23 +58,23 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     };
   }> {
     if (typeof image !== 'string' && image) {
-      let validRoi = roi ? determineMatRectROI(image, this.getIncreasedRectByPixelDensity(roi, image.pixelDensity)) : undefined;
+      let validRoi = roi ? ImageProcessor.determineMatRectROI(image, this.getIncreasedRectByPixelDensity(roi, image.pixelDensity)) : undefined;
 
-      return { data: await fromImageWithAlphaChannel(image, validRoi), rect: validRoi ? determineRegionRectROI(validRoi) : undefined, pixelDensity: image.pixelDensity };
+      return { data: await ImageProcessor.fromImageWithAlphaChannel(image, validRoi), rect: validRoi ? ImageProcessor.determineRegionRectROI(validRoi) : undefined, pixelDensity: image.pixelDensity };
     } else {
       if (!image) {
         const imageObj = await screen.grab();
-        let validRoi = roi ? determineMatRectROI(imageObj, this.getIncreasedRectByPixelDensity(roi, imageObj.pixelDensity)) : undefined;
-        const mat = await fromImageWithAlphaChannel(imageObj, validRoi);
+        let validRoi = roi ? ImageProcessor.determineMatRectROI(imageObj, this.getIncreasedRectByPixelDensity(roi, imageObj.pixelDensity)) : undefined;
+        const mat = await ImageProcessor.fromImageWithAlphaChannel(imageObj, validRoi);
 
-        return { data: mat, rect: validRoi ? determineRegionRectROI(validRoi) : undefined, pixelDensity: imageObj.pixelDensity };
+        return { data: mat, rect: validRoi ? ImageProcessor.determineRegionRectROI(validRoi) : undefined, pixelDensity: imageObj.pixelDensity };
       } else {
         const imageObj = await imageResource(image);
-        let validRoi = roi ? determineMatRectROI(imageObj, this.getIncreasedRectByPixelDensity(roi, imageObj.pixelDensity)) : undefined;
+        let validRoi = roi ? ImageProcessor.determineMatRectROI(imageObj, this.getIncreasedRectByPixelDensity(roi, imageObj.pixelDensity)) : undefined;
 
         return {
-          data: await fromImageWithAlphaChannel(imageObj, validRoi),
-          rect: validRoi ? determineRegionRectROI(validRoi) : undefined,
+          data: await ImageProcessor.fromImageWithAlphaChannel(imageObj, validRoi),
+          rect: validRoi ? ImageProcessor.determineRegionRectROI(validRoi) : undefined,
           pixelDensity: imageObj.pixelDensity,
         };
       }
@@ -188,7 +188,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
         return { confidence: m.confidence, error: m.error, location: new Region(m.location.left + roi.left, m.location.top + roi.top, m.location.width, m.location.height) };
       });
       matchResults = this.getDecreasedRectByPixelDensity(matchResults, pixelDensity);
-      validateSearchRegion(new Region(Number(roi.left), Number(roi.top), Number(roi.width), Number(roi.height)), new Region(0, 0, await screen.width(), await screen.height()));
+      ImageProcessor.validateSearchRegion(new Region(Number(roi.left), Number(roi.top), Number(roi.width), Number(roi.height)), new Region(0, 0, await screen.width(), await screen.height()));
     }
     matchResults.sort((first, second) => second.confidence - first.confidence);
 
@@ -246,7 +246,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     let overwrittenHaystack = haystack;
 
     for (const currentScale of scaleSteps) {
-      let scaledHaystack = await scaleImage(overwrittenHaystack, currentScale);
+      let scaledHaystack = await ScaleImage.scaleImage(overwrittenHaystack, currentScale);
 
       if (scaledHaystack.cols <= 10 || scaledHaystack.rows <= 10) {
         break;
@@ -277,7 +277,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     let overWrittenScaledNeedleResult = { results: results, haystack: haystack };
 
     for (const currentScale of scaleSteps) {
-      const scaledNeedle = await scaleImage(needle, currentScale);
+      const scaledNeedle = await ScaleImage.scaleImage(needle, currentScale);
 
       if (scaledNeedle.cols <= 10 || scaledNeedle.rows <= 10) {
         break;
