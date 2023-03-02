@@ -1,5 +1,11 @@
+let cv: any;
+
+try {
+  cv = require('opencv4nodejs-prebuilt-install');
+} catch {}
+
 import { Region } from '@nut-tree/nut-js';
-import * as cv from 'opencv4nodejs-prebuilt-install';
+import { Mat } from 'opencv4nodejs-prebuilt-install/lib/typings/Mat';
 
 export class ScaleImage {
   static lowerBound(value: number, boundary: number, minValue: number): number {
@@ -10,7 +16,7 @@ export class ScaleImage {
     return value >= boundary ? maxValue : value;
   }
 
-  static async scaleImage(image: cv.Mat, scaleFactor: number): Promise<cv.Mat> {
+  static async scaleImage(image: Mat, scaleFactor: number): Promise<Mat> {
     const boundScaleFactor = ScaleImage.lowerBound(scaleFactor, 0.0, 1.0);
     const scaledRows = Math.floor(image.rows * boundScaleFactor);
     const scaledCols = Math.floor(image.cols * boundScaleFactor);

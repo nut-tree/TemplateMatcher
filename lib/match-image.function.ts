@@ -1,4 +1,9 @@
-import * as cv from 'opencv4nodejs-prebuilt-install';
+let cv: any;
+
+try {
+  cv = require('opencv4nodejs-prebuilt-install');
+} catch {}
+
 import { MatchResult, Region } from '@nut-tree/nut-js';
 import { Mat, Point2, Vec3 } from 'opencv4nodejs-prebuilt-install';
 
@@ -15,8 +20,8 @@ export type MatchedResults = { results: Array<MatchResult>; haystack: Mat };
 
 export class MatchTemplate {
   public static async matchImages(
-    haystack: cv.Mat,
-    needle: cv.Mat,
+    haystack: Mat,
+    needle: Mat,
     matchedMethod: MethodNameType,
     debug: boolean = false,
   ): Promise<{
@@ -24,8 +29,8 @@ export class MatchTemplate {
     haystack: {
       minVal: number;
       maxVal: number;
-      minLoc: cv.Point2;
-      maxLoc: cv.Point2;
+      minLoc: Point2;
+      maxLoc: Point2;
     };
   }> {
     const match = await haystack.matchTemplateAsync(needle, cv[matchedMethod]);
@@ -49,8 +54,8 @@ export class MatchTemplate {
   }
 
   public static async matchImagesByWriteOverFounded(
-    haystack: cv.Mat,
-    needle: cv.Mat,
+    haystack: Mat,
+    needle: Mat,
     confidence: number,
     matchedMethod: MethodNameType,
     debug: boolean = false,
@@ -112,7 +117,7 @@ export class MatchTemplate {
     return { results: matchedResults, haystack: haystack };
   }
 
-  public static fillReginBlackColor(haystack: cv.Mat, poligon: { xL: number; yL: number; xR: number; yR: number }, color: Vec3 = new Vec3(0, 255, 0)): Mat {
+  public static fillReginBlackColor(haystack: Mat, poligon: { xL: number; yL: number; xR: number; yR: number }, color: Vec3 = new Vec3(0, 255, 0)): Mat {
     haystack.drawFillPoly([[new Point2(poligon.xL, poligon.yL), new Point2(poligon.xR, poligon.yL), new Point2(poligon.xR, poligon.yR), new Point2(poligon.xL, poligon.yR)]], color);
 
     return haystack;
@@ -122,8 +127,8 @@ export class MatchTemplate {
     minMax: {
       minVal: number;
       maxVal: number;
-      minLoc: cv.Point2;
-      maxLoc: cv.Point2;
+      minLoc: Point2;
+      maxLoc: Point2;
     },
     size: { width: number; height: number },
     locType: 'minLoc' | 'maxLoc',

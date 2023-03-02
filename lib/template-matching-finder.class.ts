@@ -1,8 +1,14 @@
-import * as cv from 'opencv4nodejs-prebuilt-install';
+let cv: any;
+
+try {
+  cv = require('opencv4nodejs-prebuilt-install');
+} catch {}
+
 import { Image, ImageFinderInterface, imageResource, MatchRequest, MatchResult, Region, screen } from '@nut-tree/nut-js';
 import { MatchedResults, MatchTemplate, MethodEnum, MethodNameType } from './match-image.function';
 import { ScaleImage } from './scale-image.function';
 import { ImageProcessor } from './image-processor.class';
+import { Mat } from 'opencv4nodejs-prebuilt-install/lib/typings/Mat';
 
 type OptionsHaystack = {
   -readonly [Property in keyof Pick<MatchRequest, 'haystack'>]?: Image | string;
@@ -38,7 +44,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     this._config = { ...this._config, ...config };
   }
 
-  private async loadNeedle(image: Image | string): Promise<{ data: cv.Mat }> {
+  private async loadNeedle(image: Image | string): Promise<{ data: Mat }> {
     if (typeof image !== 'string') {
       return { data: await ImageProcessor.fromImageWithAlphaChannel(image) };
     } else {
@@ -50,7 +56,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     image?: Image | string,
     roi?: Region,
   ): Promise<{
-    data: cv.Mat;
+    data: Mat;
     rect: Region | undefined;
     pixelDensity: {
       scaleX: number;
@@ -81,7 +87,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     }
   }
 
-  private throwOnTooLargeNeedle(haystack: cv.Mat, needle: cv.Mat, smallestScaleFactor: number) {
+  private throwOnTooLargeNeedle(haystack: Mat, needle: Mat, smallestScaleFactor: number) {
     const scaledRows = smallestScaleFactor * needle.rows;
     const scaledCols = smallestScaleFactor * needle.cols;
 
@@ -222,7 +228,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     }
   }
 
-  private async searchMultipleScales(haystack: cv.Mat, needle: cv.Mat, confidence: number, scaleSteps: Array<number>, methodType: MethodNameType, debug: boolean, firstMach: boolean = false) {
+  private async searchMultipleScales(haystack: Mat, needle: Mat, confidence: number, scaleSteps: Array<number>, methodType: MethodNameType, debug: boolean, firstMach: boolean = false) {
     const results: MatchResult[] = [];
 
     const needleData = await this.scaleNeedle(haystack, needle, confidence, scaleSteps, methodType, debug, firstMach);
@@ -240,7 +246,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     return results;
   }
 
-  private async scaleHaystack(haystack: cv.Mat, needle: cv.Mat, confidence: number, scaleSteps: Array<number>, methodType: MethodNameType, debug: boolean, firstMach: boolean = false) {
+  private async scaleHaystack(haystack: Mat, needle: Mat, confidence: number, scaleSteps: Array<number>, methodType: MethodNameType, debug: boolean, firstMach: boolean = false) {
     const results: MatchResult[] = [];
     let overWrittenScaledHaystackResult = { results: results, haystack: haystack };
     let overwrittenHaystack = haystack;
@@ -265,8 +271,8 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
   }
 
   private async scaleNeedle(
-    haystack: cv.Mat,
-    needle: cv.Mat,
+    haystack: Mat,
+    needle: Mat,
     confidence: number = 0.8,
     scaleSteps: Array<number>,
     methodType: MethodNameType,

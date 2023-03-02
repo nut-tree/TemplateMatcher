@@ -1,4 +1,9 @@
-import * as cv from 'opencv4nodejs-prebuilt-install';
+let cv: any;
+
+try {
+  cv = require('opencv4nodejs-prebuilt-install');
+} catch {}
+
 import { Image, ImageReader } from '@nut-tree/nut-js';
 
 export default class implements ImageReader {
