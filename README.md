@@ -59,7 +59,7 @@ const matchesWithScreen = await finder.findMatches({needle: pathToTemplate});
 ```
 
 ```typescript
-//standalone
+//standalone 
 {
     haystack?: string | Image,
     needle: string | Image,
