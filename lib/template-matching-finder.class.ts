@@ -10,37 +10,20 @@ import { ScaleImage } from './scale-image.function';
 import { ImageProcessor } from './image-processor.class';
 import { Mat } from 'opencv4nodejs-prebuilt-install/lib/typings/Mat';
 
-type OptionsHaystack = {
-  -readonly [Property in keyof Pick<MatchRequest, 'haystack'>]?: Image | string;
-};
-type OptionsNeedle = {
-  -readonly [Property in keyof Pick<MatchRequest, 'needle'>]: Image | string;
-};
-type OptionsConfidence = {
-  -readonly [Property in keyof Pick<MatchRequest, 'confidence'>]?: number;
-};
-type OptionsSearchMultipleScales = {
-  -readonly [Property in keyof Pick<MatchRequest, 'searchMultipleScales'>]?: boolean;
-};
-type CustomOptionTypeRoi = { roi?: Region };
-type CustomOptionsTypePartial = { customOptions?: { methodType?: MethodNameType; scaleSteps?: Array<number>; debug?: boolean } };
-type CustomOptionsType = { customOptions?: { methodType?: MethodNameType; scaleSteps?: Array<number>; debug?: boolean } & CustomOptionTypeRoi };
-type CustomMatchRequest = OptionsHaystack & OptionsNeedle & OptionsConfidence & OptionsSearchMultipleScales & CustomOptionsType;
-
-export type CustomConfigType = OptionsConfidence & OptionsSearchMultipleScales & CustomOptionsTypePartial;
+type CustomOptionsType = { methodType?: MethodNameType; searchMultipleScales?: boolean; scaleSteps?: Array<number>; debug?: boolean; roi?: Region };
 
 export default class TemplateMatchingFinder implements ImageFinderInterface {
-  private _config: CustomConfigType;
+  private _config: Partial<MatchRequest<Image | string, CustomOptionsType>>;
 
   constructor() {
-    this._config = { confidence: 0.8, searchMultipleScales: true, customOptions: { scaleSteps: [1, 0.9, 0.8, 0.7, 0.6, 0.5], methodType: MethodEnum.TM_CCOEFF_NORMED, debug: false } };
+    this._config = { confidence: 0.8, providerData: { searchMultipleScales: true, scaleSteps: [1, 0.9, 0.8, 0.7, 0.6, 0.5], methodType: MethodEnum.TM_CCOEFF_NORMED, debug: false } };
   }
 
   getConfig() {
     return this._config;
   }
 
-  setConfig(config: CustomConfigType) {
+  setConfig(config: CustomOptionsType) {
     this._config = { ...this._config, ...config };
   }
 
@@ -96,27 +79,26 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     }
   }
 
-  private async initData(matchRequest: MatchRequest | CustomMatchRequest) {
-    const customMatchRequest = matchRequest as CustomMatchRequest;
+  private async initData<T extends CustomOptionsType>(matchRequest: MatchRequest<Image | string, T>) {
     const confidence =
-      customMatchRequest.customOptions && customMatchRequest.customOptions?.methodType === MethodEnum.TM_SQDIFF && matchRequest.confidence === 0.99
+      matchRequest.providerData && matchRequest.providerData?.methodType === MethodEnum.TM_SQDIFF && matchRequest.confidence === 0.99
         ? 0.998
-        : (customMatchRequest.customOptions && customMatchRequest.customOptions?.methodType === MethodEnum.TM_CCOEFF_NORMED) ||
-          (customMatchRequest.customOptions && customMatchRequest.customOptions?.methodType === MethodEnum.TM_CCORR_NORMED && matchRequest.confidence === 0.99)
+        : (matchRequest.providerData && matchRequest.providerData?.methodType === MethodEnum.TM_CCOEFF_NORMED) ||
+          (matchRequest.providerData && matchRequest.providerData?.methodType === MethodEnum.TM_CCORR_NORMED && matchRequest.confidence === 0.99)
         ? (this._config.confidence as number)
         : matchRequest.confidence === 0.99 || typeof matchRequest.confidence === 'undefined'
         ? (this._config.confidence as number)
         : matchRequest.confidence;
-    const searchMultipleScales = customMatchRequest.searchMultipleScales ? customMatchRequest.searchMultipleScales : this._config.searchMultipleScales;
-    const scaleSteps = customMatchRequest.customOptions?.scaleSteps || (this._config.customOptions?.scaleSteps as Array<number>);
-    const methodType = customMatchRequest.customOptions?.methodType || (this._config.customOptions?.methodType as MethodNameType);
-    const debug = customMatchRequest.customOptions?.debug || (this._config.customOptions?.debug as boolean);
+    const searchMultipleScales = matchRequest.providerData?.searchMultipleScales ? matchRequest.providerData?.searchMultipleScales : this._config.providerData?.searchMultipleScales;
+    const scaleSteps = matchRequest.providerData?.scaleSteps || (this._config.providerData?.scaleSteps as Array<number>);
+    const methodType = matchRequest.providerData?.methodType || (this._config.providerData?.methodType as MethodNameType);
+    const debug = matchRequest.providerData?.debug || (this._config.providerData?.debug as boolean);
 
     const needle = await this.loadNeedle(matchRequest.needle);
     if (!needle || needle.data.empty) {
       throw new Error(`Failed to load ${typeof matchRequest.needle === 'string' ? matchRequest.needle : matchRequest.needle.id}, got empty image.`);
     }
-    const haystack = await this.loadHaystack(matchRequest.haystack, customMatchRequest.customOptions?.roi);
+    const haystack = await this.loadHaystack(matchRequest.haystack, matchRequest.providerData?.roi);
     if (!haystack || haystack.data.empty) {
       throw new Error(
         `Failed to load ${
@@ -124,7 +106,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
         }, got empty image.`,
       );
     }
-    if (matchRequest.searchMultipleScales) {
+    if (matchRequest.providerData?.searchMultipleScales) {
       this.throwOnTooLargeNeedle(haystack.data, needle.data, scaleSteps[scaleSteps.length - 1]);
     }
 
@@ -136,13 +118,13 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
       methodType: methodType,
       debug: debug,
       searchMultipleScales: searchMultipleScales,
-      roi: customMatchRequest.customOptions?.roi,
+      roi: matchRequest.providerData?.roi,
     };
   }
 
-  public async findMatches(matchRequest: MatchRequest | CustomMatchRequest): Promise<MatchResult[]> {
+  public async findMatches<CustomOptionsType>(matchRequest: MatchRequest<Image | string, CustomOptionsType>): Promise<MatchResult[]> {
     let matchResults: Array<MatchResult> = [];
-    let { haystack, needle, confidence, scaleSteps, methodType, debug, searchMultipleScales, roi } = await this.initData(matchRequest);
+    let { haystack, needle, confidence, scaleSteps, methodType, debug, searchMultipleScales, roi } = await this.initData(matchRequest as any);
 
     if (!searchMultipleScales) {
       const overwrittenResults = await MatchTemplate.matchImagesByWriteOverFounded(haystack.data, needle.data, confidence, methodType, debug);
@@ -213,8 +195,8 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     return potentialMatches;
   }
 
-  public async findMatch(matchRequest: MatchRequest | CustomMatchRequest): Promise<MatchResult> {
-    let { haystack, needle, confidence, scaleSteps, methodType, debug, searchMultipleScales, roi } = await this.initData(matchRequest);
+  public async findMatch<CustomOptionsType>(matchRequest: MatchRequest<Image | string, CustomOptionsType>): Promise<MatchResult> {
+    let { haystack, needle, confidence, scaleSteps, methodType, debug, searchMultipleScales, roi } = await this.initData(matchRequest as any);
 
     if (!searchMultipleScales) {
       const matches = await MatchTemplate.matchImages(haystack.data, needle.data, methodType, debug);
