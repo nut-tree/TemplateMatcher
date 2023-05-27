@@ -5,29 +5,11 @@ try {
 } catch {}
 
 import { Image, ImageFinderInterface, imageResource, MatchRequest, MatchResult, Region, screen } from '@nut-tree/nut-js';
-import { MatchedResults, MatchTemplate, MethodEnum, MethodNameType } from './match-image.function';
+import { MatchTemplate } from './match-image.function';
 import { ScaleImage } from './scale-image.function';
 import { ImageProcessor } from './image-processor.class';
 import { Mat } from 'opencv4nodejs-prebuilt-install/lib/typings/Mat';
-
-type OptionsHaystack = {
-  -readonly [Property in keyof Pick<MatchRequest, 'haystack'>]?: Image | string;
-};
-type OptionsNeedle = {
-  -readonly [Property in keyof Pick<MatchRequest, 'needle'>]: Image | string;
-};
-type OptionsConfidence = {
-  -readonly [Property in keyof Pick<MatchRequest, 'confidence'>]?: number;
-};
-type OptionsSearchMultipleScales = {
-  -readonly [Property in keyof Pick<MatchRequest, 'searchMultipleScales'>]?: boolean;
-};
-type CustomOptionTypeRoi = { roi?: Region };
-type CustomOptionsTypePartial = { customOptions?: { methodType?: MethodNameType; scaleSteps?: Array<number>; debug?: boolean } };
-type CustomOptionsType = { customOptions?: { methodType?: MethodNameType; scaleSteps?: Array<number>; debug?: boolean } & CustomOptionTypeRoi };
-type CustomMatchRequest = OptionsHaystack & OptionsNeedle & OptionsConfidence & OptionsSearchMultipleScales & CustomOptionsType;
-
-export type CustomConfigType = OptionsConfidence & OptionsSearchMultipleScales & CustomOptionsTypePartial;
+import { CustomConfigType, CustomMatchRequest, MatchedResults, MethodEnum, MethodNameType } from './customTypes';
 
 export default class TemplateMatchingFinder implements ImageFinderInterface {
   private _config: CustomConfigType;
