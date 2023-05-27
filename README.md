@@ -1,4 +1,4 @@
-# OpenCV 4.1.1 Template Matching Image Finder
+# OpenCV 4.1.1 Template Matching Image Finder 
 
 ![Tested](https://github.com/udarrr/TemplateMatcher/workflows/Tests/badge.svg)
 ![Released](https://github.com/udarrr/TemplateMatcher/workflows/Create%20tagged%20release/badge.svg)
@@ -6,9 +6,9 @@
 
 ### It's plugin for [nutjs project](https://www.npmjs.com/package/@nut-tree/nut-js) or standalone with some features like
 
-- increased accuracy
-- increased performance
-- added some customOptions for arguments `providerData` in [nutjs](https://github.com/nut-tree/nut.js/blob/develop/lib/optionalsearchparameters.class.ts) implemented in nutjs > version 3, also available in standalone
+- incresed accuracy (x10)
+- incresed perfomance (~x2)
+- added some customOptions for arguments `params?: OptionalSearchParameters` in [nutjs](https://github.com/nut-tree/nut.js/blob/develop/lib/optionalsearchparameters.class.ts) !not implemented in nutjs yet, but available in standalone
 - added standalone
 
 #### Installation for nutjs
@@ -45,31 +45,31 @@ const matchesWithScreen = await finder.findMatches({needle: pathToTemplate});
 #### Options
 
 ```javascript
-//@udarrr/template-matcher@2.0.1 with nutjs 3.1.1 options 
+//nutjs options 
 {
     confidence?: number,
-    providerData?: {
-                       searchMultipleScales?: boolean,
-                       methodType?: MethodNameType; 
-                       scaleSteps?: Array<number>; 
-                       roi?: Region; 
-                       debug?: boolean
+    searchMultipleScales?: boolean,
+    customOptions?: {
+                       methodType: MethodNameType; 
+                       scaleSteps: Array<number>; 
+                       roi: Region; 
+                       debug: boolean
                     },
 }
 ```
 
 ```typescript
-//standalone @udarrr/template-matcher@2.0.1
+//standalone 
 {
     haystack?: string | Image,
     needle: string | Image,
     confidence?: number,
-    providerData?: {
-                       searchMultipleScales?: boolean,
-                       methodType?: MethodNameType; 
-                       scaleSteps?: Array<number>; 
-                       roi?: Region; 
-                       debug?: boolean
+    searchMultipleScales?: boolean,
+    customOptions?: {
+                       methodType: MethodNameType; 
+                       scaleSteps: Array<number>; 
+                       roi: Region; 
+                       debug: boolean
                     },
 }
 ```
