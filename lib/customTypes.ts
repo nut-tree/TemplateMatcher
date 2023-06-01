@@ -9,7 +9,7 @@ export enum MethodEnum {
   TM_SQDIFF = 'TM_SQDIFF',
   TM_SQDIFF_NORMED = 'TM_SQDIFF_NORMED',
 }
-export type MethodNameType = `${MethodEnum}`;
+export type MethodNameType = 'TM_CCOEFF' | 'TM_CCOEFF_NORMED' | 'TM_CCORR' | 'TM_CCORR_NORMED' | 'TM_SQDIFF' | 'TM_SQDIFF_NORMED';
 export type MatchedResults = { results: Array<MatchResult>; haystack: Mat };
 
 export interface CustomConfigType {
