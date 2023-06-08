@@ -6,21 +6,26 @@
 
 ## It's either standalone or plugin for [nutjs project](https://www.npmjs.com/package/@nut-tree/nut-js)
 
-### Installation for standalone
+#### Standalone findMatch,findMatches
 
 ```nodejs
 npm i @udarrr/template-matcher
 ```
 
-### Installation for nutjs
+```typescript
+import finder from "@udarrr/template-matcher";
 
-```nodejs
-npm i @udarrr/template-matcher@2.0.4
+(async () => {
+const matcheImages = await finder.findMatch({haystack: 'pathToImage', needle: 'pathToTemplate'});
+const matcheWithScreen = await finder.findMatch({needle: pathToTemplate});
+
+const matchesImages = await finder.findMatches({haystack: 'pathToImage', needle: 'pathToTemplate'});
+const matchesWithScreen = await finder.findMatches({needle: 'pathToTemplate'});
+})();
+
 ```
 
-### Options
-
-#### Standalone findMatch,findMatches
+###### @udarrr/template-matcher standalone API
 
 ```typescript
 {
@@ -37,36 +42,10 @@ npm i @udarrr/template-matcher@2.0.4
 }
 ```
 
-```typescript
-import finder from "@udarrr/template-matcher";
-
-(async () => {
-const matcheImages = await finder.findMatch({haystack: 'pathToImage', needle: 'pathToTemplate'});
-const matcheWithScreen = await finder.findMatch({needle: pathToTemplate});
-
-const matchesImages = await finder.findMatches({haystack: 'pathToImage', needle: 'pathToTemplate'});
-const matchesWithScreen = await finder.findMatches({needle: 'pathToTemplate'});
-})();
-
-
-```
-
 #### Nutjs v3 find,findAll
 
 ```nodejs
 npm i @udarrr/template-matcher@2.0.4
-```
-
-```typescript
-{
-  providerData?: {
-    searchMultipleScales?: boolean;
-    methodType?: MethodNameType;
-    scaleSteps?: Array<number>;
-    roi?: Region;
-    debug?: boolean;
-  };
-};
 ```
 
 ```typescript
@@ -81,6 +60,20 @@ import "@udarrr/template-matcher"; //once wherever
 
 ```
 
+###### @udarrr/template-matcher providerData Api
+
+```typescript
+{
+  providerData?: {
+    searchMultipleScales?: boolean;
+    methodType?: MethodNameType;
+    scaleSteps?: Array<number>;
+    roi?: Region;
+    debug?: boolean;
+  };
+};
+```
+
 #### Values by default
 
 ```typescript
@@ -92,7 +85,7 @@ confidence: for "TM_SQDIFF" | "TM_SQDIFF_NORMED" confidence by default 0.98 for 
 
 #### Disclaimer for nutjs v3
 
-In case using the package with [nutjs](https://github.com/nut-tree/nut.js/blob/develop/lib/optionalsearchparameters.class.ts) v3 or above please use precise 2.0.2 version of the package it could be prevented in package.json lile
+In case using the package with [nutjs](https://github.com/nut-tree/nut.js/blob/develop/lib/optionalsearchparameters.class.ts) v3 or above please use precise 2.0.4 version of the package it could be prevented in package.json lile
 
 ```json
  "@udarrr/template-matcher": "~2.0.4",
