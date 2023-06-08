@@ -15,7 +15,7 @@ npm i @udarrr/template-matcher
 ### Installation for nutjs
 
 ```nodejs
-npm i @udarrr/template-matcher
+npm i @udarrr/template-matcher@2.0.4
 ```
 
 ### Options
