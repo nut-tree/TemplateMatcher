@@ -2,11 +2,11 @@
 
 ![Tested](https://github.com/udarrr/TemplateMatcher/workflows/Tests/badge.svg)
 ![Released](https://github.com/udarrr/TemplateMatcher/workflows/Create%20tagged%20release/badge.svg)
-![Supported node LTS versions](https://img.shields.io/badge/node@arch64-12%2C%2013%2C%2014%2C%2015%2C%2016%2C%2017%2C%2018%2C%2019-green)
+![Supported node LTS versions](https://img.shields.io/badge/node@arch64-12%2C%2013%2C%2014%2C%2015%2C%2016%2C%2017%2C%2018%2C%2019%2C%2020-green)
 
 ## It's either standalone or plugin for [nutjs project](https://www.npmjs.com/package/@nut-tree/nut-js)
 
-#### Standalone findMatch,findMatches
+### Standalone findMatch,findMatches
 
 ```nodejs
 npm i @udarrr/template-matcher
@@ -25,7 +25,7 @@ const matchesWithScreen = await finder.findMatches({needle: 'pathToTemplate'});
 
 ```
 
-###### @udarrr/template-matcher standalone API
+#### @udarrr/template-matcher standalone API
 
 ```typescript
 {
@@ -42,7 +42,7 @@ const matchesWithScreen = await finder.findMatches({needle: 'pathToTemplate'});
 }
 ```
 
-#### Nutjs v3 find,findAll
+### Nutjs v3 find,findAll
 
 ```nodejs
 npm i @udarrr/template-matcher@2.0.4
@@ -60,7 +60,7 @@ import "@udarrr/template-matcher"; //once wherever
 
 ```
 
-###### @udarrr/template-matcher providerData Api
+#### @udarrr/template-matcher providerData nutjs v3 Api
 
 ```typescript
 {
