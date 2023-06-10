@@ -6,6 +6,12 @@ try {
 
 import { Image, ImageReader } from '@nut-tree/nut-js';
 
+// IMREAD_UNCHANGED : If set, return the loaded image as is (with alpha channel, otherwise it gets cropped).
+// IMREAD_GRAYSCALE : If set, always convert image to the single channel grayscale image.
+// IMREAD_COLOR : If set, always convert image to the 3 channel BGR color image.
+// IMREAD_ANYDEPTH : If set, return 16-bit/32-bit image when the input has the corresponding depth, otherwise convert it to 8-bit.
+// IMREAD_ANYCOLOR : If set, the image is read in any possible color format.
+
 export default class implements ImageReader {
   public async load(path: string): Promise<Image> {
     return new Promise<Image>(async (resolve, reject) => {
@@ -18,9 +24,3 @@ export default class implements ImageReader {
     });
   }
 }
-
-// IMREAD_UNCHANGED : If set, return the loaded image as is (with alpha channel, otherwise it gets cropped).
-// IMREAD_GRAYSCALE : If set, always convert image to the single channel grayscale image.
-// IMREAD_COLOR : If set, always convert image to the 3 channel BGR color image.
-// IMREAD_ANYDEPTH : If set, return 16-bit/32-bit image when the input has the corresponding depth, otherwise convert it to 8-bit.
-// IMREAD_ANYCOLOR : If set, the image is read in any possible color format.

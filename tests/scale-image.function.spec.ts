@@ -1,7 +1,7 @@
 import * as path from 'path';
-import { ScaleImage } from '../lib/scale-image.function';
-import { ImageProcessor } from '../lib/image-processor.class';
-import ImageReader from '../lib/image-reader.class';
+import { ScaleImageHandler } from '../lib/handlers/scaleImage';
+import { ImageProcessor } from '../lib/imageProcessor.class';
+import ImageReader from '../lib/imageReader.class';
 
 jest.mock('jimp', () => {});
 
@@ -16,7 +16,7 @@ describe('scaleImage', () => {
     const expectedHeight = Math.floor(inputMat.rows * scaleFactor);
 
     // WHEN
-    const result = await ScaleImage.scaleImage(inputMat, scaleFactor);
+    const result = await ScaleImageHandler.scaleImage(inputMat, scaleFactor);
 
     // THEN
     expect(result.rows).toBe(expectedHeight);
@@ -33,7 +33,7 @@ describe('scaleImage', () => {
     const expectedHeight = inputMat.rows;
 
     // WHEN
-    const result = await ScaleImage.scaleImage(inputMat, scaleFactor);
+    const result = await ScaleImageHandler.scaleImage(inputMat, scaleFactor);
 
     // THEN
     expect(result.rows).toBe(expectedHeight);

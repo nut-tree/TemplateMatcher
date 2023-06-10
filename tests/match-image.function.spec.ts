@@ -1,7 +1,7 @@
 import * as cv from 'opencv4nodejs-prebuilt-install';
 import { mockPartial } from 'sneer';
-import { MatchTemplate } from '../lib/match-image.function';
-import { MethodEnum } from '../lib/customTypes';
+import { OverWritingMatcherHandler } from '../lib/handlers/overWriting';
+import { MethodEnum } from '../lib/types';
 
 jest.mock('jimp', () => {});
 
@@ -29,7 +29,7 @@ describe('matchImages', () => {
     });
 
     // WHEN
-    const result = await MatchTemplate.matchImages(haystackMock, needleMock, MethodEnum.TM_SQDIFF_NORMED);
+    const result = await OverWritingMatcherHandler.matchImages(haystackMock, needleMock, MethodEnum.TM_SQDIFF_NORMED);
 
     // THEN
     expect(result.data.location.left).toEqual(minLocX);

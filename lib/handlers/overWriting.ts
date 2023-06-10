@@ -6,9 +6,9 @@ try {
 
 import { MatchResult, Region } from '@nut-tree/nut-js';
 import { Mat, Point2, Vec3 } from 'opencv4nodejs-prebuilt-install';
-import { MatchedResults, MethodEnum, MethodNameType } from './customTypes';
+import { MatchedResults, MethodEnum, MethodNameType } from '../types';
 
-export class MatchTemplate {
+export class OverWritingMatcherHandler {
   public static async matchImages(
     haystack: Mat,
     needle: Mat,
@@ -82,8 +82,8 @@ export class MatchTemplate {
       }
 
       if (isMethodTypeMaxOrMin ? minVal <= confidence : maxVal > confidence) {
-        const region = MatchTemplate.getRectangleRegion(minMax, { height: h, width: w }, locType);
-        haystack = MatchTemplate.fillReginBlackColor(haystack, { xL: region.xL, yL: region.yL, xR: region.xR, yR: region.yR });
+        const region = OverWritingMatcherHandler.getRectangleRegion(minMax, { height: h, width: w }, locType);
+        haystack = OverWritingMatcherHandler.fillReginBlackColor(haystack, { xL: region.xL, yL: region.yL, xR: region.xR, yR: region.yR });
         matchedResults.push(
           new MatchResult(
             isMethodTypeMaxOrMin ? 1.0 - minMax.minVal : minMax.maxVal,

@@ -1,4 +1,4 @@
-import { ScaleImage } from '../lib/scale-image.function';
+import { ScaleImageHandler } from '../lib/handlers/scaleImage';
 
 describe('lowerBound function', () => {
   it.each([
@@ -8,7 +8,7 @@ describe('lowerBound function', () => {
     [0, 0, 0, 0],
   ])('Input: %f, Boundary: %f, minValue: %f, Expected: %f', (input: number, boundary: number, minValue: number, expected: number) => {
     // WHEN
-    const result = ScaleImage.lowerBound(input, boundary, minValue);
+    const result = ScaleImageHandler.lowerBound(input, boundary, minValue);
 
     // THEN
     expect(result).toBe(expected);
@@ -23,7 +23,7 @@ describe('upperBound function', () => {
     [5, 5, 5, 5],
   ])('Input: %f, Boundary: %f, maxValue: %f, Expected: %f', (input: number, boundary: number, maxValue: number, expected: number) => {
     // WHEN
-    const result = ScaleImage.upperBound(input, boundary, maxValue);
+    const result = ScaleImageHandler.upperBound(input, boundary, maxValue);
 
     // THEN
     expect(result).toBe(expected);

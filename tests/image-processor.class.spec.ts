@@ -1,7 +1,8 @@
 import { resolve } from 'path';
 import { Region } from '@nut-tree/nut-js';
-import ImageReader from '../lib/image-reader.class';
-import { ImageProcessor } from '../lib/image-processor.class';
+import { ImageProcessor } from '../lib/imageProcessor.class';
+import ImageReader from '../lib/imageReader.class';
+import { ValidationHandler } from '../lib/handlers/validation';
 
 jest.mock('jimp', () => {});
 
@@ -49,7 +50,7 @@ describe('ImageProcessor with ROI', () => {
     const image = await imageReader.load(imagePath);
 
     // WHEN
-    const mat = await ImageProcessor.fromImageWithoutAlphaChannel(image, ImageProcessor.determineMatRectROI(image, new Region(-100, -100, 10, 10)));
+    const mat = await ImageProcessor.fromImageWithoutAlphaChannel(image, ValidationHandler.determineMatRectROI(image, new Region(-100, -100, 10, 10)));
 
     // THEN
     expect(image.hasAlphaChannel).toBeFalsy();
@@ -66,7 +67,7 @@ describe('ImageProcessor with ROI', () => {
     const image = await imageReader.load(imagePath);
 
     // WHEN
-    const mat = await ImageProcessor.fromImageWithoutAlphaChannel(image, ImageProcessor.determineMatRectROI(image, new Region(10, 10, image.width * 2, image.height * 2)));
+    const mat = await ImageProcessor.fromImageWithoutAlphaChannel(image, ValidationHandler.determineMatRectROI(image, new Region(10, 10, image.width * 2, image.height * 2)));
 
     // THEN
     expect(image.hasAlphaChannel).toBeFalsy();

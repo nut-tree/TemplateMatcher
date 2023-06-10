@@ -1,5 +1,5 @@
 import { providerRegistry } from '@nut-tree/nut-js';
-import TemplateMatchingFinder from './lib/template-matching-finder.class';
+import TemplateMatchingFinder from './lib/templateMatchingFinder';
 
 const finder = new TemplateMatchingFinder();
 

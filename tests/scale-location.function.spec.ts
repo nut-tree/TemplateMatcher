@@ -1,5 +1,5 @@
 import { Region } from '@nut-tree/nut-js';
-import { ScaleImage } from '../lib/scale-image.function';
+import { ScaleImageHandler } from '../lib/handlers/scaleImage';
 
 jest.mock('jimp', () => {});
 
@@ -11,7 +11,7 @@ describe('scaleLocation', () => {
     const expectedRegion = new Region(200, 200, 10, 10);
 
     // WHEN
-    const result = ScaleImage.scaleLocation(inputRegion, scaleFactor);
+    const result = ScaleImageHandler.scaleLocation(inputRegion, scaleFactor);
 
     // THEN
     expect(result).toEqual(expectedRegion);
@@ -24,7 +24,7 @@ describe('scaleLocation', () => {
     const expectedRegion = new Region(100, 100, 10, 10);
 
     // WHEN
-    const result = ScaleImage.scaleLocation(inputRegion, scaleFactor);
+    const result = ScaleImageHandler.scaleLocation(inputRegion, scaleFactor);
 
     // THEN
     expect(result).toEqual(expectedRegion);
