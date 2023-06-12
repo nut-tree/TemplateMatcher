@@ -1,9 +1,9 @@
-import { MatchResult } from '@nut-tree/nut-js';
+import { MatchResult, Region } from '@nut-tree/nut-js';
 
 const { min, max } = Math;
 
 export class NonMaximumSuppressionHandler {
-  static filterMatchResult(foundLocations: Array<MatchResult>, overlapThresh: number = 0.4): MatchResult[] {
+  static filterMatchResult(foundLocations: Array<MatchResult<Region>>, overlapThresh: number = 0.4): MatchResult<Region>[] {
     let possibleLocation: Array<{ x1: number; x2: number; y1: number; y2: number; width: number; height: number; area: number }> = [];
     let suppress: Array<{ x1: number; x2: number; y1: number; y2: number; width: number; height: number; area: number }> = [];
 
@@ -54,6 +54,6 @@ export class NonMaximumSuppressionHandler {
         });
       });
     }
-    return foundLocations.filter((rect: MatchResult) => pick.some((i) => i.x1 === rect.location.left && i.y1 === rect.location.top));
+    return foundLocations.filter((rect: MatchResult<Region>) => pick.some((i) => i.x1 === rect.location.left && i.y1 === rect.location.top));
   }
 }

@@ -15,7 +15,7 @@ export class OverWritingMatcherHandler {
     matchedMethod: MethodNameType,
     debug: boolean = false,
   ): Promise<{
-    data: MatchResult;
+    data: MatchResult<Region>;
     haystack: {
       minVal: number;
       maxVal: number;
@@ -56,7 +56,7 @@ export class OverWritingMatcherHandler {
     let minVal = 0;
     let maxVal = 1;
     let minMax, match;
-    let matchedResults: Array<MatchResult> = [];
+    let matchedResults: Array<MatchResult<Region>> = [];
     let prevMinVal,
       prevMaxVal = 0;
     let prevMinLoc,

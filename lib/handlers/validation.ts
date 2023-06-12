@@ -40,7 +40,7 @@ export class ValidationHandler {
     return rect;
   }
 
-  static getDecreasedRectByPixelDensity(matchResults: MatchResult[], pixelDensity: { scaleX: number; scaleY: number }) {
+  static getDecreasedRectByPixelDensity(matchResults: MatchResult<Region>[], pixelDensity: { scaleX: number; scaleY: number }) {
     return matchResults.map((results) => {
       return {
         confidence: results.confidence,
@@ -65,7 +65,7 @@ export class ValidationHandler {
   }
 
   static async getValidatedMatches(
-    matchResults: Array<MatchResult>,
+    matchResults: Array<MatchResult<Region>>,
     pixelDensity: {
       scaleX: number;
       scaleY: number;

@@ -8,7 +8,7 @@ import { Image, ImageFinderInterface, imageResource, MatchRequest, MatchResult, 
 import { ScaleImageHandler } from './handlers/scaleImage';
 import { ImageProcessor } from './imageProcessor.class';
 import { Mat } from 'opencv4nodejs-prebuilt-install/lib/typings/Mat';
-import { CustomConfigType, CustomMatchRequest, MethodEnum, MethodNameType } from './types';
+import { OptionsSearchParameterType, CustomMatchRequest, MethodEnum, MethodNameType, CustomConfigType } from './types';
 import { OverWritingMatcherHandler } from './handlers/overWriting';
 import { ValidationHandler } from './handlers/validation';
 import { NonMaximumSuppressionHandler } from './handlers/nonMaximumSuppression';
@@ -17,7 +17,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
   private _config: CustomConfigType;
 
   constructor() {
-    this._config = { confidence: 0.8, searchMultipleScales: true, customOptions: { scaleSteps: [1, 0.9, 0.8, 0.7, 0.6, 0.5], methodType: MethodEnum.TM_CCOEFF_NORMED, debug: false } };
+    this._config = { confidence: 0.8, providerData: { searchMultipleScales: true, scaleSteps: [1, 0.9, 0.8, 0.7, 0.6, 0.5], methodType: MethodEnum.TM_CCOEFF_NORMED, debug: false } };
   }
 
   getConfig() {
@@ -75,27 +75,30 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     }
   }
 
-  private async initData(matchRequest: MatchRequest | CustomMatchRequest) {
+  private async initData<OptionalSearchParameters>(matchRequest: MatchRequest<Image, OptionalSearchParameters> | CustomMatchRequest) {
     const customMatchRequest = matchRequest as CustomMatchRequest;
     const confidence =
-      customMatchRequest.customOptions && customMatchRequest.customOptions?.methodType === MethodEnum.TM_SQDIFF && matchRequest.confidence === 0.99
+      customMatchRequest.providerData && customMatchRequest.providerData?.methodType === MethodEnum.TM_SQDIFF && matchRequest.confidence === 0.99
         ? 0.998
-        : (customMatchRequest.customOptions && customMatchRequest.customOptions?.methodType === MethodEnum.TM_CCOEFF_NORMED) ||
-          (customMatchRequest.customOptions && customMatchRequest.customOptions?.methodType === MethodEnum.TM_CCORR_NORMED && matchRequest.confidence === 0.99)
+        : (customMatchRequest.providerData && customMatchRequest.providerData?.methodType === MethodEnum.TM_CCOEFF_NORMED) ||
+          (customMatchRequest.providerData && customMatchRequest.providerData?.methodType === MethodEnum.TM_CCORR_NORMED && matchRequest.confidence === 0.99)
         ? (this._config.confidence as number)
         : matchRequest.confidence === 0.99 || typeof matchRequest.confidence === 'undefined'
         ? (this._config.confidence as number)
         : matchRequest.confidence;
-    const searchMultipleScales = customMatchRequest.searchMultipleScales ? customMatchRequest.searchMultipleScales : this._config.searchMultipleScales;
-    const scaleSteps = customMatchRequest.customOptions?.scaleSteps || (this._config.customOptions?.scaleSteps as Array<number>);
-    const methodType = customMatchRequest.customOptions?.methodType || (this._config.customOptions?.methodType as MethodNameType);
-    const debug = customMatchRequest.customOptions?.debug || (this._config.customOptions?.debug as boolean);
+    const searchMultipleScales =
+      customMatchRequest.providerData && 'searchMultipleScales' in customMatchRequest.providerData
+        ? customMatchRequest.providerData.searchMultipleScales
+        : this._config.providerData?.searchMultipleScales;
+    const scaleSteps = customMatchRequest.providerData?.scaleSteps || (this._config.providerData?.scaleSteps as Array<number>);
+    const methodType = customMatchRequest.providerData?.methodType || (this._config.providerData?.methodType as MethodNameType);
+    const debug = customMatchRequest.providerData?.debug || (this._config.providerData?.debug as boolean);
 
     const needle = await this.loadNeedle(matchRequest.needle);
     if (!needle || needle.data.empty) {
       throw new Error(`Failed to load ${typeof matchRequest.needle === 'string' ? matchRequest.needle : matchRequest.needle.id}, got empty image.`);
     }
-    const haystack = await this.loadHaystack(matchRequest.haystack, customMatchRequest.customOptions?.roi);
+    const haystack = await this.loadHaystack(matchRequest.haystack, customMatchRequest.providerData?.roi);
     if (!haystack || haystack.data.empty) {
       throw new Error(
         `Failed to load ${
@@ -103,7 +106,7 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
         }, got empty image.`,
       );
     }
-    if (matchRequest.searchMultipleScales) {
+    if (searchMultipleScales) {
       ValidationHandler.throwOnTooLargeNeedle(haystack.data, needle.data, scaleSteps[scaleSteps.length - 1]);
     }
 
@@ -115,11 +118,11 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
       methodType: methodType,
       debug: debug,
       searchMultipleScales: searchMultipleScales,
-      roi: customMatchRequest.customOptions?.roi,
+      roi: customMatchRequest.providerData?.roi,
     };
   }
 
-  public async findMatch(matchRequest: MatchRequest | CustomMatchRequest): Promise<MatchResult> {
+  public async findMatch<OptionalSearchParameters>(matchRequest: MatchRequest<Image, OptionalSearchParameters> | CustomMatchRequest): Promise<MatchResult<Region>> {
     let { haystack, needle, confidence, scaleSteps, methodType, debug, searchMultipleScales, roi } = await this.initData(matchRequest);
 
     if (!searchMultipleScales) {
@@ -134,8 +137,8 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
     }
   }
 
-  public async findMatches(matchRequest: MatchRequest | CustomMatchRequest): Promise<MatchResult[]> {
-    let matchResults: Array<MatchResult> = [];
+  public async findMatches<OptionalSearchParameters>(matchRequest: MatchRequest<Image, OptionalSearchParameters> | CustomMatchRequest): Promise<MatchResult<Region>[]> {
+    let matchResults: Array<MatchResult<Region>> = [];
     let { haystack, needle, confidence, scaleSteps, methodType, debug, searchMultipleScales, roi } = await this.initData(matchRequest);
 
     if (!searchMultipleScales) {

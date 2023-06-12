@@ -45,17 +45,17 @@ const matchesWithScreen = await finder.findMatches({needle: 'pathToTemplate'});
 ### Nutjs v3 find,findAll
 
 ```nodejs
-npm i @udarrr/template-matcher@2.0.4
+npm i @udarrr/template-matcher
 ```
 
 ```typescript
 import { imageResource, screen } from '@nut-tree/nut-js';
-import { CustomOptionsType } from '@udarrr/template-matcher/lib/template-matching-finder.class';
+import {OptionsSearchParameterType} from '@udarrr/template-matcher/lib/types'
 import "@udarrr/template-matcher"; //once wherever
 
 (async () => {
-  const img = await screen.find<CustomOptionsType>(imageResource("path"),{ providerData: {...}});
-  const imgs = await screen.findAll<CustomOptionsType>(imageResource("path"),{ providerData: {...}});
+  const img = await screen.find<OptionsSearchParameterType>(imageResource("path"),{ providerData: {...}}F);
+  const imgs = await screen.findAll<OptionsSearchParameterType>(imageResource("path"),{ providerData: {...}});
 })();
 
 ```
@@ -83,10 +83,12 @@ debug: true | false by default false
 confidence: for "TM_SQDIFF" | "TM_SQDIFF_NORMED" confidence by default 0.98 for "TM_CCOEFF" | "TM_CCOEFF_NORMED" | "TM_CCORR" | "TM_CCORR_NORMED" by default 0.8
 ```
 
-#### Disclaimer for nutjs v3
+#### Disclaimer for nutjs v2.3.0
 
-In case using the package with [nutjs](https://github.com/nut-tree/nut.js/blob/develop/lib/optionalsearchparameters.class.ts) v3 or above please use precise 2.0.4 version of the package it could be prevented in package.json lile
+```nodejs
+npm i @udarrr/template-matcher@2.1.3
+```
 
 ```json
- "@udarrr/template-matcher": "~2.0.4",
+ "@udarrr/template-matcher": "~2.1.3",
 ```

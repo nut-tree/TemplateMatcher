@@ -31,7 +31,7 @@ export class ScaleImageHandler {
   }
 
   static async scaleHaystack(haystack: Mat, needle: Mat, confidence: number, scaleSteps: Array<number>, methodType: MethodNameType, debug: boolean, firstMach: boolean = false) {
-    const results: MatchResult[] = [];
+    const results: MatchResult<Region>[] = [];
     let overWrittenScaledHaystackResult = { results: results, haystack: haystack };
     let overwrittenHaystack = haystack;
 
@@ -63,7 +63,7 @@ export class ScaleImageHandler {
     debug: boolean,
     firstMatch: boolean = false,
   ): Promise<MatchedResults> {
-    const results: MatchResult[] = [];
+    const results: MatchResult<Region>[] = [];
     let overWrittenScaledNeedleResult = { results: results, haystack: haystack };
 
     for (const currentScale of scaleSteps) {
@@ -86,7 +86,7 @@ export class ScaleImageHandler {
   }
 
   static async searchMultipleScales(haystack: Mat, needle: Mat, confidence: number, scaleSteps: Array<number>, methodType: MethodNameType, debug: boolean, firstMach: boolean = false) {
-    const results: MatchResult[] = [];
+    const results: MatchResult<Region>[] = [];
 
     const needleData = await ScaleImageHandler.scaleNeedle(haystack, needle, confidence, scaleSteps, methodType, debug, firstMach);
     results.push(...needleData.results);

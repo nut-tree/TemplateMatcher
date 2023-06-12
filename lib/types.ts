@@ -10,12 +10,18 @@ export enum MethodEnum {
   TM_SQDIFF_NORMED = 'TM_SQDIFF_NORMED',
 }
 export type MethodNameType = 'TM_CCOEFF' | 'TM_CCOEFF_NORMED' | 'TM_CCORR' | 'TM_CCORR_NORMED' | 'TM_SQDIFF' | 'TM_SQDIFF_NORMED';
-export type MatchedResults = { results: Array<MatchResult>; haystack: Mat };
+export type MatchedResults = { results: Array<MatchResult<Region>>; haystack: Mat };
 
+export interface OptionsSearchParameterType {
+  searchMultipleScales?: boolean;
+  methodType?: MethodNameType;
+  scaleSteps?: Array<number>;
+  debug?: boolean;
+  roi?: Region;
+}
 export interface CustomConfigType {
   confidence?: number;
-  searchMultipleScales?: boolean;
-  customOptions?: { methodType?: MethodNameType; scaleSteps?: Array<number>; debug?: boolean; roi?: Region };
+  providerData?: OptionsSearchParameterType;
 }
 
 export interface CustomMatchRequest extends CustomConfigType {
