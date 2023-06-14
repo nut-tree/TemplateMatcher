@@ -16,7 +16,7 @@ jobs:
           - name: Ubuntu
             version: latest
         node: ['14']
-        arch: [arm64]
+        arch: ['ARM64']
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v2
