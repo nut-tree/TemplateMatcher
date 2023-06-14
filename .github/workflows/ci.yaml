@@ -2,7 +2,7 @@ name: Tests
 on:
   push:
     branches:
-      - develop
+      - arm64_test
   pull_request:
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
           - name: Ubuntu
             version: latest
         node: ['14']
-        arch: [x64]
+        arch: [arm64]
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v2
