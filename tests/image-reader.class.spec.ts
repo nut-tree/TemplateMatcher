@@ -1,5 +1,5 @@
 import * as path from 'path';
-import ImageReader from '../lib/imageReader.class';
+import ImageReader from '../lib/readers/imageReader.class';
 
 jest.mock('jimp', () => {});
 

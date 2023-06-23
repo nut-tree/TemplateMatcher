@@ -5,9 +5,9 @@ try {
 } catch {}
 
 import { MatchResult, Region } from '@nut-tree/nut-js';
-import { Mat } from 'opencv4nodejs-prebuilt-install/lib/typings/Mat';
 import { MethodNameType, MatchedResults } from '../types';
 import { OverWritingMatcherHandler } from './overWriting';
+import { Mat } from 'opencv4nodejs-prebuilt-install';
 
 export class ScaleImageHandler {
   static lowerBound(value: number, boundary: number, minValue: number): number {

@@ -1,7 +1,7 @@
 import { resolve } from 'path';
 import { Region } from '@nut-tree/nut-js';
-import { ImageProcessor } from '../lib/imageProcessor.class';
-import ImageReader from '../lib/imageReader.class';
+import { ImageProcessor } from '../lib/readers/imageProcessor.class';
+import ImageReader from '../lib/readers/imageReader.class';
 import { ValidationHandler } from '../lib/handlers/validation';
 
 jest.mock('jimp', () => {});

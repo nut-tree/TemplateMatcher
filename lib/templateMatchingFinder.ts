@@ -1,23 +1,21 @@
-let cv: any;
-
-try {
-  cv = require('opencv4nodejs-prebuilt-install');
-} catch {}
-
 import { Image, ImageFinderInterface, imageResource, MatchRequest, MatchResult, Region, screen } from '@nut-tree/nut-js';
 import { ScaleImageHandler } from './handlers/scaleImage';
-import { ImageProcessor } from './imageProcessor.class';
+import { ImageProcessor } from './readers/imageProcessor.class';
 import { Mat } from 'opencv4nodejs-prebuilt-install/lib/typings/Mat';
-import { OptionsSearchParameterType, CustomMatchRequest, MethodEnum, MethodNameType, CustomConfigType } from './types';
+import { CustomMatchRequest, MethodEnum, MethodNameType, CustomConfigType } from './types';
 import { OverWritingMatcherHandler } from './handlers/overWriting';
 import { ValidationHandler } from './handlers/validation';
 import { NonMaximumSuppressionHandler } from './handlers/nonMaximumSuppression';
+import { InvariantRotatingHandler } from './handlers/invariantRotating';
 
 export default class TemplateMatchingFinder implements ImageFinderInterface {
   private _config: CustomConfigType;
 
   constructor() {
-    this._config = { confidence: 0.8, providerData: { searchMultipleScales: true, scaleSteps: [1, 0.9, 0.8, 0.7, 0.6, 0.5], methodType: MethodEnum.TM_CCOEFF_NORMED, debug: false } };
+    this._config = {
+      confidence: 0.8,
+      providerData: { scaleSteps: [1, 0.9, 0.8, 0.7, 0.6, 0.5], methodType: MethodEnum.TM_CCOEFF_NORMED, debug: false, rotation: { range: 180, overLap: 0.1, minDstLength: 2048 } },
+    };
   }
 
   getConfig() {
@@ -87,12 +85,12 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
         ? (this._config.confidence as number)
         : matchRequest.confidence;
     const searchMultipleScales =
-      customMatchRequest.providerData && 'searchMultipleScales' in customMatchRequest.providerData
-        ? customMatchRequest.providerData.searchMultipleScales
-        : this._config.providerData?.searchMultipleScales;
+      customMatchRequest.providerData && 'scaleSteps' in customMatchRequest.providerData && customMatchRequest.providerData.scaleSteps?.length ? true : !!this._config.providerData?.scaleSteps?.length;
     const scaleSteps = customMatchRequest.providerData?.scaleSteps || (this._config.providerData?.scaleSteps as Array<number>);
     const methodType = customMatchRequest.providerData?.methodType || (this._config.providerData?.methodType as MethodNameType);
     const debug = customMatchRequest.providerData?.debug || (this._config.providerData?.debug as boolean);
+    const rotationRange = customMatchRequest.providerData?.rotation?.range || this._config.providerData?.rotation?.range;
+    const rotationMinLength = customMatchRequest.providerData?.rotation?.minDstLength || this._config.providerData?.rotation?.minDstLength;
 
     const needle = await this.loadNeedle(matchRequest.needle);
     if (!needle || needle.data.empty) {
@@ -119,34 +117,59 @@ export default class TemplateMatchingFinder implements ImageFinderInterface {
       debug: debug,
       searchMultipleScales: searchMultipleScales,
       roi: customMatchRequest.providerData?.roi,
+      rotationRange: rotationRange,
+      rotationMinLength: rotationMinLength,
     };
   }
 
   public async findMatch<OptionalSearchParameters>(matchRequest: MatchRequest<Image, OptionalSearchParameters> | CustomMatchRequest): Promise<MatchResult<Region>> {
-    let { haystack, needle, confidence, scaleSteps, methodType, debug, searchMultipleScales, roi } = await this.initData(matchRequest);
+    let { haystack, rotationRange, rotationMinLength, needle, confidence, scaleSteps, methodType, debug, searchMultipleScales, roi } = await this.initData(matchRequest);
 
     if (!searchMultipleScales) {
-      const matches = await OverWritingMatcherHandler.matchImages(haystack.data, needle.data, methodType, debug);
-      const result = await ValidationHandler.getValidatedMatches([matches.data], haystack.pixelDensity, confidence, roi);
+      let result: Array<MatchResult<Region>> = [];
 
-      return result[0];
+      if (rotationRange) {
+        const rotatedResults = await InvariantRotatingHandler.Match(haystack.data, needle.data, rotationMinLength as number, confidence, rotationRange, 1 - Math.min(...scaleSteps));
+        result = rotatedResults.map((i) => new MatchResult<Region>(i.dMatchScore, new Region(i.ptLT.x, i.ptLT.y, i.size.width, i.size.height)));
+      } else {
+        const matches = await OverWritingMatcherHandler.matchImages(haystack.data, needle.data, methodType, debug);
+        result = [matches.data];
+      }
+      return (await ValidationHandler.getValidatedMatches(result, haystack.pixelDensity, confidence, roi))[0];
     } else {
-      const scaledResults = await ScaleImageHandler.searchMultipleScales(haystack.data, needle.data, confidence, scaleSteps, methodType, debug, true);
+      let result: Array<MatchResult<Region>> = [];
 
-      return (await ValidationHandler.getValidatedMatches(scaledResults.length ? [scaledResults[0]] : scaledResults, haystack.pixelDensity, confidence, roi))[0];
+      if (rotationRange) {
+        const rotatedResults = await InvariantRotatingHandler.Match(haystack.data, needle.data, rotationMinLength as number, confidence, rotationRange, 1 - Math.min(...scaleSteps));
+        result = rotatedResults.map((i) => new MatchResult<Region>(i.dMatchScore, new Region(i.ptLT.x, i.ptLT.y, i.size.width, i.size.height)));
+      } else {
+        const scaledResults = await ScaleImageHandler.searchMultipleScales(haystack.data, needle.data, confidence, scaleSteps, methodType, debug, true);
+        result = scaledResults;
+      }
+      return (await ValidationHandler.getValidatedMatches(result.length ? [result[0]] : result, haystack.pixelDensity, confidence, roi))[0];
     }
   }
 
   public async findMatches<OptionalSearchParameters>(matchRequest: MatchRequest<Image, OptionalSearchParameters> | CustomMatchRequest): Promise<MatchResult<Region>[]> {
     let matchResults: Array<MatchResult<Region>> = [];
-    let { haystack, needle, confidence, scaleSteps, methodType, debug, searchMultipleScales, roi } = await this.initData(matchRequest);
+    let { haystack, rotationRange, rotationMinLength, needle, confidence, scaleSteps, methodType, debug, searchMultipleScales, roi } = await this.initData(matchRequest);
 
     if (!searchMultipleScales) {
-      const overwrittenResults = await OverWritingMatcherHandler.matchImagesByWriteOverFounded(haystack.data, needle.data, confidence, methodType, debug);
-      matchResults.push(...overwrittenResults.results);
+      if (rotationRange) {
+        const rotatedResults = await InvariantRotatingHandler.Match(haystack.data, needle.data, rotationMinLength as number, confidence, rotationRange, 1 - Math.min(...scaleSteps));
+        matchResults = rotatedResults.map((i) => new MatchResult<Region>(i.dMatchScore, new Region(i.ptLT.x, i.ptLT.y, i.size.width, i.size.height)));
+      } else {
+        const overwrittenResults = await OverWritingMatcherHandler.matchImagesByWriteOverFounded(haystack.data, needle.data, confidence, methodType, debug);
+        matchResults.push(...overwrittenResults.results);
+      }
     } else {
-      const scaledResults = await ScaleImageHandler.searchMultipleScales(haystack.data, needle.data, confidence, scaleSteps, methodType, debug);
-      matchResults.push(...scaledResults);
+      if (rotationRange) {
+        const rotatedResults = await InvariantRotatingHandler.Match(haystack.data, needle.data, rotationMinLength as number, confidence, rotationRange, 1 - Math.min(...scaleSteps));
+        matchResults = rotatedResults.map((i) => new MatchResult<Region>(i.dMatchScore, new Region(i.ptLT.x, i.ptLT.y, i.size.width, i.size.height)));
+      } else {
+        const scaledResults = await ScaleImageHandler.searchMultipleScales(haystack.data, needle.data, confidence, scaleSteps, methodType, debug);
+        matchResults.push(...scaledResults);
+      }
     }
     const suppressedMatchResults = NonMaximumSuppressionHandler.filterMatchResult(matchResults);
 

@@ -5,8 +5,8 @@ try {
 } catch {}
 
 import { MatchResult, Region } from '@nut-tree/nut-js';
-import { Mat, Point2, Vec3 } from 'opencv4nodejs-prebuilt-install';
 import { MatchedResults, MethodEnum, MethodNameType } from '../types';
+import { Mat, Point2, Vec3 } from 'opencv4nodejs-prebuilt-install';
 
 export class OverWritingMatcherHandler {
   public static async matchImages(

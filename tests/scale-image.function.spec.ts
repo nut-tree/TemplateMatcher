@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { ScaleImageHandler } from '../lib/handlers/scaleImage';
-import { ImageProcessor } from '../lib/imageProcessor.class';
-import ImageReader from '../lib/imageReader.class';
+import { ImageProcessor } from '../lib/readers/imageProcessor.class';
+import ImageReader from '../lib/readers/imageReader.class';
 
 jest.mock('jimp', () => {});
 

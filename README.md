@@ -6,6 +6,13 @@
 
 ## It's either standalone or plugin for [nutjs project](https://www.npmjs.com/package/@nut-tree/nut-js)
 
+The best template matcher for node js ever with handlers
+
+- Invariant Rotating
+- Over Writing
+- Scale Images
+- Non Maximum Suppression
+
 ### Standalone findMatch,findMatches
 
 ```nodejs
@@ -32,10 +39,10 @@ const matchesWithScreen = await finder.findMatches({needle: 'pathToTemplate'});
     haystack?: string | Image,
     needle: string | Image,
     confidence?: number,
-    searchMultipleScales?: boolean,
     customOptions?: {
                        methodType?: MethodNameType; 
                        scaleSteps?: Array<number>; 
+                       rotation?: { range?: number; overLap?: number; minDstLength?: number };
                        roi?: Region; 
                        debug?: boolean
                     },
@@ -65,22 +72,23 @@ import "@udarrr/template-matcher"; //once wherever
 ```typescript
 {
   providerData?: {
-    searchMultipleScales?: boolean;
-    methodType?: MethodNameType;
-    scaleSteps?: Array<number>;
-    roi?: Region;
-    debug?: boolean;
-  };
+      methodType?: MethodNameType;
+      scaleSteps?: Array<number>;
+      rotation?: { range?: number; overLap?: number; minDstLength?: number };
+      debug?: boolean;
+      roi?: Region;
+  }
 };
 ```
 
 #### Values by default
 
 ```typescript
-methodType: "TM_CCOEFF" | "TM_CCOEFF_NORMED" | "TM_CCORR" | "TM_CCORR_NORMED" | "TM_SQDIFF" | "TM_SQDIFF_NORMED" by default "TM_CCOEFF_NORMED"
-scaleSteps:  [0.9]; by default  [1, 0.9, 0.8, 0.7, 0.6, 0.5]
-debug: true | false by default false
-confidence: for "TM_SQDIFF" | "TM_SQDIFF_NORMED" confidence by default 0.98 for "TM_CCOEFF" | "TM_CCOEFF_NORMED" | "TM_CCORR" | "TM_CCORR_NORMED" by default 0.8
+methodType: "TM_CCOEFF_NORMED"
+scaleSteps: [1, 0.9, 0.8, 0.7, 0.6, 0.5]
+debug: false
+rotation: {range: 0, overLap: Math.min(...scaleSteps), minDstLength: 2048}
+confidence: 0.8
 ```
 
 #### Disclaimer for nutjs v2.3.0
